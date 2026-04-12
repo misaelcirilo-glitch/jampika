@@ -55,6 +55,11 @@ app.use('/api/v1/sync', syncRoutes)
 
 app.use(errorHandler)
 
-app.listen(env.PORT, () => {
-  console.log(`\ud83d\ude80 Jampika API escuchando en http://localhost:${env.PORT}`)
-})
+// En producción (Vercel) se exporta, en local se escucha
+if (process.env.VERCEL !== '1') {
+  app.listen(env.PORT, () => {
+    console.log(`\ud83d\ude80 Jampika API escuchando en http://localhost:${env.PORT}`)
+  })
+}
+
+export default app

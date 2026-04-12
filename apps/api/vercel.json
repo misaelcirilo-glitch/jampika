@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "buildCommand": "npm install typescript --save-dev && npx prisma generate && npx tsc",
+  "installCommand": "npm install",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api" }
+  ],
+  "env": {
+    "VERCEL": "1"
+  }
+}
