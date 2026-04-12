@@ -1,12 +1,16 @@
 {
   "version": 2,
-  "buildCommand": "npm install typescript --save-dev && npx prisma generate && npx tsc",
+  "buildCommand": "npm run vercel-build",
   "installCommand": "npm install",
   "framework": null,
+  "outputDirectory": ".",
+  "functions": {
+    "dist/index.js": {
+      "runtime": "@vercel/node@3.0.0",
+      "includeFiles": "dist/**"
+    }
+  },
   "rewrites": [
-    { "source": "/(.*)", "destination": "/api" }
-  ],
-  "env": {
-    "VERCEL": "1"
-  }
+    { "source": "/(.*)", "destination": "/dist/index.js" }
+  ]
 }
