@@ -1,16 +1,16 @@
 {
   "version": 2,
-  "buildCommand": "npm run vercel-build",
-  "installCommand": "npm install",
-  "framework": null,
-  "outputDirectory": ".",
-  "functions": {
-    "dist/index.js": {
-      "runtime": "@vercel/node@3.0.0",
-      "includeFiles": "dist/**"
+  "buildCommand": "npx prisma generate && npx tsc",
+  "builds": [
+    {
+      "src": "api/index.mjs",
+      "use": "@vercel/node"
     }
-  },
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/dist/index.js" }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "api/index.mjs"
+    }
   ]
 }
