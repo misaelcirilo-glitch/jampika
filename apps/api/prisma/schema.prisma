@@ -1,0 +1,378 @@
+// Jampika - Schema Prisma
+// Arquitectura multi-tenant con clinic_id en todas las tablas sensibles.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// CLÍNICAS (TENANTS)
+// ============================================================
+model Clinic {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String   @unique
+  ownerId   String   @map("owner_id") @db.Uuid
+  plan      String   @default("starter") // starter | professional | premium
+  country   String   // PE, CO, EC, BO, MX, CL
+  timezone  String   @default("America/Lima")
+  taxId     String?  @map("tax_id")
+  address   String?
+  phone     String?
+  email     String?
+  logoUrl   String?  @map("logo_url")
+  settings  Json     @default("{}")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users              User[]
+  patients           Patient[]
+  medicalRecords     MedicalRecord[]
+  appointments       Appointment[]
+  invoices           Invoice[]
+  services           Service[]
+  clinicMedications  ClinicMedication[]
+  inventoryItems     InventoryItem[]
+  inventoryMovements InventoryMovement[]
+  syncLogs           SyncLog[]
+
+  @@map("clinics")
+}
+
+// ============================================================
+// USUARIOS
+// ============================================================
+model User {
+  id            String    @id @default(uuid()) @db.Uuid
+  clinicId      String    @map("clinic_id") @db.Uuid
+  email         String
+  passwordHash  String    @map("password_hash")
+  firstName     String    @map("first_name")
+  lastName      String    @map("last_name")
+  role          String    // admin | doctor | receptionist | nurse
+  specialty     String?
+  licenseNumber String?   @map("license_number")
+  phone         String?
+  avatarUrl     String?   @map("avatar_url")
+  color         String?   // color hex para identificar al profesional en la agenda
+  schedule      Json?     // {mon:{start:"08:00",end:"18:00"},tue:{...},...}
+  isActive      Boolean   @default(true) @map("is_active")
+  lastLogin     DateTime? @map("last_login")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  clinic         Clinic              @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  medicalRecords MedicalRecord[]
+  appointments   Appointment[]
+  inventoryMoves InventoryMovement[]
+  refreshTokens  RefreshToken[]
+
+  @@unique([clinicId, email])
+  @@index([clinicId])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  token     String   @unique
+  deviceId  String?  @map("device_id")
+  expiresAt DateTime @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
+}
+
+// ============================================================
+// PACIENTES
+// ============================================================
+model Patient {
+  id                     String   @id @default(uuid()) @db.Uuid
+  clinicId               String   @map("clinic_id") @db.Uuid
+  documentType           String   @map("document_type")
+  documentNumber         String   @map("document_number")
+  firstName              String   @map("first_name")
+  lastName               String   @map("last_name")
+  birthDate              DateTime? @map("birth_date") @db.Date
+  gender                 String?
+  bloodType              String?  @map("blood_type")
+  phone                  String?
+  email                  String?
+  address                String?
+  emergencyContactName   String?  @map("emergency_contact_name")
+  emergencyContactPhone  String?  @map("emergency_contact_phone")
+  insuranceProvider      String?  @map("insurance_provider")
+  insuranceNumber        String?  @map("insurance_number")
+  allergies              String[] @default([])
+  chronicConditions      String[] @default([]) @map("chronic_conditions")
+  notes                  String?
+  isActive               Boolean  @default(true) @map("is_active")
+  localId                String?  @map("local_id")
+  syncedAt               DateTime? @map("synced_at")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  clinic         Clinic              @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  medicalRecords MedicalRecord[]
+  appointments   Appointment[]
+  invoices       Invoice[]
+  inventoryMoves InventoryMovement[]
+
+  @@unique([clinicId, documentType, documentNumber])
+  @@index([clinicId, lastName, firstName])
+  @@map("patients")
+}
+
+// ============================================================
+// HISTORIA CLÍNICA (APPEND-ONLY)
+// ============================================================
+model MedicalRecord {
+  id            String    @id @default(uuid()) @db.Uuid
+  clinicId      String    @map("clinic_id") @db.Uuid
+  patientId     String    @map("patient_id") @db.Uuid
+  doctorId      String    @map("doctor_id") @db.Uuid
+  appointmentId String?   @map("appointment_id") @db.Uuid
+  recordType    String    @map("record_type")
+  recordDate    DateTime  @map("record_date")
+  subjective    String?
+  objective     String?
+  assessment    String?
+  plan          String?
+  diagnoses     Json      @default("[]")
+  vitalSigns    Json      @default("{}") @map("vital_signs")
+  prescriptions Json      @default("[]")
+  attachments   Json      @default("[]")
+  isSigned      Boolean   @default(false) @map("is_signed")
+  signedAt      DateTime? @map("signed_at")
+  notes         String?
+  localId       String?   @map("local_id")
+  syncedAt      DateTime? @map("synced_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  clinic      Clinic       @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  patient     Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor      User         @relation(fields: [doctorId], references: [id])
+  appointment Appointment? @relation(fields: [appointmentId], references: [id])
+
+  @@index([clinicId, patientId, recordDate])
+  @@map("medical_records")
+}
+
+// ============================================================
+// CITAS
+// ============================================================
+model Appointment {
+  id               String    @id @default(uuid()) @db.Uuid
+  clinicId         String    @map("clinic_id") @db.Uuid
+  patientId        String    @map("patient_id") @db.Uuid
+  doctorId         String    @map("doctor_id") @db.Uuid
+  startTime        DateTime  @map("start_time")
+  endTime          DateTime  @map("end_time")
+  durationMinutes  Int       @default(30) @map("duration_minutes")
+  status           String    @default("scheduled")
+  appointmentType  String?   @map("appointment_type")
+  specialty        String?
+  reason           String?
+  notes            String?
+  reminderSent     Boolean   @default(false) @map("reminder_sent")
+  reminderSentAt   DateTime? @map("reminder_sent_at")
+  localId          String?   @map("local_id")
+  syncedAt         DateTime? @map("synced_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  clinic         Clinic          @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  patient        Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor         User            @relation(fields: [doctorId], references: [id])
+  medicalRecords MedicalRecord[]
+  invoices       Invoice[]
+
+  @@index([clinicId, doctorId, startTime])
+  @@index([clinicId, patientId])
+  @@map("appointments")
+}
+
+// ============================================================
+// FACTURACIÓN
+// ============================================================
+model Invoice {
+  id                       String    @id @default(uuid()) @db.Uuid
+  clinicId                 String    @map("clinic_id") @db.Uuid
+  patientId                String    @map("patient_id") @db.Uuid
+  appointmentId            String?   @map("appointment_id") @db.Uuid
+  invoiceNumber            String    @map("invoice_number")
+  invoiceType              String    @map("invoice_type")
+  customerTaxId            String?   @map("customer_tax_id")
+  customerName             String?   @map("customer_name")
+  customerAddress          String?   @map("customer_address")
+  subtotal                 Decimal   @db.Decimal(10, 2)
+  taxRate                  Decimal   @default(18.00) @map("tax_rate") @db.Decimal(5, 2)
+  taxAmount                Decimal   @map("tax_amount") @db.Decimal(10, 2)
+  discount                 Decimal   @default(0) @db.Decimal(10, 2)
+  total                    Decimal   @db.Decimal(10, 2)
+  currency                 String    @default("PEN")
+  status                   String    @default("pending")
+  paymentMethod            String?   @map("payment_method")
+  paidAt                   DateTime? @map("paid_at")
+  electronicInvoiceId      String?   @map("electronic_invoice_id")
+  electronicInvoiceStatus  String?   @map("electronic_invoice_status")
+  electronicInvoiceXml     String?   @map("electronic_invoice_xml")
+  localId                  String?   @map("local_id")
+  syncedAt                 DateTime? @map("synced_at")
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
+
+  clinic      Clinic        @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  patient     Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  appointment Appointment?  @relation(fields: [appointmentId], references: [id])
+  items       InvoiceItem[]
+
+  @@unique([clinicId, invoiceNumber])
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id          String   @id @default(uuid()) @db.Uuid
+  invoiceId   String   @map("invoice_id") @db.Uuid
+  description String
+  quantity    Int      @default(1)
+  unitPrice   Decimal  @map("unit_price") @db.Decimal(10, 2)
+  subtotal    Decimal  @db.Decimal(10, 2)
+  serviceCode String?  @map("service_code")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@map("invoice_items")
+}
+
+// ============================================================
+// CATÁLOGO DE SERVICIOS
+// ============================================================
+model Service {
+  id              String   @id @default(uuid()) @db.Uuid
+  clinicId        String   @map("clinic_id") @db.Uuid
+  name            String
+  description     String?
+  category        String?
+  price           Decimal  @db.Decimal(10, 2)
+  durationMinutes Int      @default(30) @map("duration_minutes")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  @@index([clinicId])
+  @@map("services")
+}
+
+// ============================================================
+// CATÁLOGO DE MEDICAMENTOS POR CLÍNICA (dinámico)
+// ============================================================
+model ClinicMedication {
+  id               String   @id @default(uuid()) @db.Uuid
+  clinicId         String   @map("clinic_id") @db.Uuid
+  name             String
+  generic          String?
+  presentation     String?
+  defaultDosage    String?  @map("default_dosage")
+  defaultFrequency String?  @map("default_frequency")
+  category         String?
+  usageCount       Int      @default(1) @map("usage_count")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  @@unique([clinicId, name, presentation])
+  @@index([clinicId, name])
+  @@map("clinic_medications")
+}
+
+// ============================================================
+// INVENTARIO
+// ============================================================
+model InventoryItem {
+  id             String    @id @default(uuid()) @db.Uuid
+  clinicId       String    @map("clinic_id") @db.Uuid
+  name           String
+  genericName    String?   @map("generic_name")
+  category       String?
+  sku            String?
+  currentStock   Int       @default(0) @map("current_stock")
+  minStock       Int       @default(5) @map("min_stock")
+  unit           String?
+  purchasePrice  Decimal?  @map("purchase_price") @db.Decimal(10, 2)
+  salePrice      Decimal?  @map("sale_price") @db.Decimal(10, 2)
+  expirationDate DateTime? @map("expiration_date") @db.Date
+  supplier       String?
+  location       String?
+  isActive       Boolean   @default(true) @map("is_active")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  clinic    Clinic              @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  movements InventoryMovement[]
+
+  @@index([clinicId])
+  @@map("inventory_items")
+}
+
+model InventoryMovement {
+  id           String   @id @default(uuid()) @db.Uuid
+  clinicId     String   @map("clinic_id") @db.Uuid
+  itemId       String   @map("item_id") @db.Uuid
+  movementType String   @map("movement_type")
+  quantity     Int
+  reason       String?
+  patientId    String?  @map("patient_id") @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  localId      String?  @map("local_id")
+  syncedAt     DateTime? @map("synced_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  clinic  Clinic        @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  item    InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  patient Patient?      @relation(fields: [patientId], references: [id])
+  user    User          @relation(fields: [userId], references: [id])
+
+  @@index([clinicId, itemId])
+  @@map("inventory_movements")
+}
+
+// ============================================================
+// SYNC LOG
+// ============================================================
+model SyncLog {
+  id                 String   @id @default(uuid()) @db.Uuid
+  clinicId           String   @map("clinic_id") @db.Uuid
+  deviceId           String   @map("device_id")
+  tableName          String   @map("table_name")
+  recordId           String   @map("record_id") @db.Uuid
+  operation          String
+  payload            Json
+  localTimestamp     DateTime @map("local_timestamp")
+  serverTimestamp    DateTime @default(now()) @map("server_timestamp")
+  conflictResolved   Boolean  @default(false) @map("conflict_resolved")
+  conflictResolution String?  @map("conflict_resolution")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  @@index([clinicId, deviceId, serverTimestamp])
+  @@index([clinicId, tableName, serverTimestamp])
+  @@map("sync_log")
+}

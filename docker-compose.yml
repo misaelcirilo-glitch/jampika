@@ -1,0 +1,33 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: jampika-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: jampika
+      POSTGRES_PASSWORD: jampika
+      POSTGRES_DB: jampika
+    ports:
+      - "5433:5432"
+    volumes:
+      - jampika_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jampika"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: jampika-redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    volumes:
+      - jampika_redisdata:/data
+
+volumes:
+  jampika_pgdata:
+  jampika_redisdata:
