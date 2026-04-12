@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "prisma generate && tsc",
-    "vercel-build": "npm install typescript --save-dev && npx prisma generate && npx tsc",
+    "vercel-build": "npx prisma generate && npx tsc",
     "start": "node dist/index.js",
     "lint": "tsc --noEmit",
     "test": "vitest run",
