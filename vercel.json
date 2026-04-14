@@ -1,0 +1,7 @@
+{
+  "buildCommand": "npx turbo run build --filter=@jampika/web",
+  "installCommand": "npm install",
+  "outputDirectory": "apps/web/.next",
+  "framework": "nextjs",
+  "ignoreCommand": "npx turbo-ignore @jampika/web"
+}
