@@ -52,9 +52,19 @@ export async function apiFetch<T = unknown>(
     })
   }
 
-  let res = await doFetch()
-  if (res.status === 401 && (await tryRefresh())) {
+  let res: Response
+  try {
     res = await doFetch()
+    if (res.status === 401 && (await tryRefresh())) {
+      res = await doFetch()
+    }
+  } catch {
+    // fetch() rechaza (TypeError: "Load failed" / "Failed to fetch") cuando no
+    // hay red o el servidor no responde. Damos un mensaje claro y accionable.
+    throw new ApiError(
+      0,
+      'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.',
+    )
   }
 
   const contentType = res.headers.get('content-type') ?? ''

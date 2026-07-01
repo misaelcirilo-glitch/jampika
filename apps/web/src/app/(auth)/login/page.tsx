@@ -6,11 +6,15 @@ import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
 
+// Solo se muestran credenciales/prefill demo cuando se habilita explícitamente.
+// En producción esta variable no está definida, por lo que queda deshabilitado.
+const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
+
 export default function LoginPage() {
   const router = useRouter()
   const login = useAuthStore((s) => s.login)
-  const [email, setEmail] = useState('admin@jampika.dev')
-  const [password, setPassword] = useState('jampika123')
+  const [email, setEmail] = useState(DEMO_MODE ? 'admin@jampika.dev' : '')
+  const [password, setPassword] = useState(DEMO_MODE ? 'jampika123' : '')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -101,9 +105,11 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <p className="mt-6 text-center text-xs text-slate-400">
-          Modo demo: admin@jampika.dev / jampika123
-        </p>
+        {DEMO_MODE && (
+          <p className="mt-6 text-center text-xs text-slate-400">
+            Modo demo: admin@jampika.dev / jampika123
+          </p>
+        )}
       </div>
     </div>
   )
