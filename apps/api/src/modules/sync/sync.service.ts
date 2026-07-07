@@ -1,4 +1,4 @@
-import type { ConflictItem, ServerChange, SyncPushRequest, SyncableTable } from '@jampika/shared'
+import type { ConflictItem, ServerChange, SyncPushRequest, SyncableTable } from '../../types/sync'
 import { prisma } from '../../config/database.js'
 import { resolveConflict } from './conflict-resolver.js'
 

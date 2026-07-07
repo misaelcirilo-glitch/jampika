@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { z } from 'zod'
-import type { SyncableTable } from '@jampika/shared'
+import type { SyncableTable } from '../../types/sync'
 import { prisma } from '../../config/database.js'
 import { authMiddleware } from '../../middleware/auth.js'
 import * as syncService from './sync.service.js'

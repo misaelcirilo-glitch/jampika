@@ -2,7 +2,7 @@
 // - medical_records: append-only, nunca hay conflicto.
 // - Resto: last-write-wins comparando timestamps.
 
-import type { SyncableTable } from '@jampika/shared'
+import type { SyncableTable } from '../../types/sync'
 
 export type Resolution = 'local_wins' | 'server_wins' | 'merged' | 'append'
 
