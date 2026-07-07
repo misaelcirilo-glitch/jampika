@@ -1,13 +1,26 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "//": "Autocontenido (sin extends ../../tsconfig.base.json): en el build serverless de Vercel el root es apps/api aislado y la base del monorepo no existe, lo que hacia caer a tsc a defaults ES3 y romper el build.",
   "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": "src",
+    "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "sourceMap": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "outDir": "dist",
+    "rootDir": "src",
     "allowImportingTsExtensions": false,
     "verbatimModuleSyntax": false,
     "types": ["node"]
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }
