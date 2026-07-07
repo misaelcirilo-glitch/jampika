@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { z } from 'zod'
+import { Prisma } from '@prisma/client'
 import { prisma } from '../../config/database.js'
 import { authMiddleware } from '../../middleware/auth.js'
 
@@ -58,7 +59,7 @@ router.post('/', async (req, res, next) => {
       return res.json(updated)
     }
     const created = await prisma.clinicMedication.create({
-      data: { clinicId, ...body },
+      data: { clinicId, ...body } as Prisma.ClinicMedicationUncheckedCreateInput,
     })
     res.status(201).json(created)
   } catch (e) {

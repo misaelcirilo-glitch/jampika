@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { z } from 'zod'
+import { Prisma } from '@prisma/client'
 import { prisma } from '../../config/database.js'
 import { authMiddleware } from '../../middleware/auth.js'
 
@@ -78,13 +79,16 @@ router.post('/', async (req, res, next) => {
   try {
     const body = patientSchema.parse(req.body)
     const patient = await prisma.patient.create({
+      // Cast a UncheckedCreateInput: fija la variante con clinicId escalar y evita
+      // que la inferencia (más estricta en el runtime de Vercel) tome la variante
+      // relacional donde clinicId es `never`.
       data: {
         ...body,
         id: body.id,
         clinicId: req.auth!.clinicId,
         birthDate: body.birthDate ? new Date(body.birthDate) : null,
         email: body.email || null,
-      },
+      } as Prisma.PatientUncheckedCreateInput,
     })
     res.status(201).json(patient)
   } catch (e) {

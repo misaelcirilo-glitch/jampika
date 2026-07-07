@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { z } from 'zod'
-import type { SyncableTable } from '../../types/sync'
+import type { SyncableTable, SyncPushRequest } from '../../types/sync'
 import { prisma } from '../../config/database.js'
 import { authMiddleware } from '../../middleware/auth.js'
 import * as syncService from './sync.service.js'
@@ -47,7 +47,9 @@ const pushSchema = z.object({
 router.post('/push', async (req, res, next) => {
   try {
     const body = pushSchema.parse(req.body)
-    const result = await syncService.push(req.auth!.clinicId, body)
+    // El tipo de salida de Zod ya trae los defaults resueltos; el cast fija la
+    // forma esperada sin depender de la inferencia (que varía entre versiones).
+    const result = await syncService.push(req.auth!.clinicId, body as SyncPushRequest)
     res.json(result)
   } catch (e) {
     next(e)
