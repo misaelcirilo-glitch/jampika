@@ -193,7 +193,9 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
           <div className="mt-8 border-t border-slate-200 pt-3 text-center text-[10px] leading-relaxed text-slate-400">
             {invoice.sunatHash && <p>Resumen: {invoice.sunatHash}</p>}
             <p>Representación impresa del comprobante electrónico.</p>
-            <p>Pendiente de envío a SUNAT.</p>
+            <p className="mt-1 font-semibold text-amber-600">
+              DOCUMENTO EN PRUEBAS (BETA) — sin validez tributaria hasta su envío a SUNAT.
+            </p>
           </div>
         </div>
       </div>

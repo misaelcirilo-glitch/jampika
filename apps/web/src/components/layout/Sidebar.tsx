@@ -37,7 +37,12 @@ export function Sidebar() {
           <Activity className="h-5 w-5 text-white" />
         </div>
         <div>
-          <h1 className="text-lg font-bold text-slate-800">Jampika</h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-lg font-bold text-slate-800">Jampika</h1>
+            <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-700">
+              Beta
+            </span>
+          </div>
           <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
             Gestión Clínica
           </p>
