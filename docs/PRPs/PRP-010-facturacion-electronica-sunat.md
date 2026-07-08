@@ -32,6 +32,16 @@ El SaaS es **multitenant**: cada clínica es un **emisor SUNAT distinto** (su RU
 - **Aislamiento estricto**: series/correlativos y credenciales NUNCA se comparten entre clínicas (ya garantizado por `clinicId` en `comprobante_series`).
 - **Onboarding**: al activar facturación, la clínica registra su RUC → validar → (en multi-emisor) darla de alta en el proveedor.
 
+## Restricción de mercado (confirmada 2026-07-08) — onboarding LLAVE EN MANO
+La mayoría de clínicas objetivo **NO tienen proveedor de facturación NI certificado NI conexión a SUNAT**. Por tanto Jampika debe absorber TODA la complejidad; la clínica solo debe: tener **RUC activo/afecto** y hacer **un paso mínimo guiado** de autorización en SUNAT (inevitable por ley). Implicaciones para elegir proveedor (Fase 2):
+- **Multi-emisor** (registrar N RUCs bajo la cuenta de la plataforma). ⟵ imprescindible.
+- **Certificado gestionado**: el proveedor **genera/administra el certificado digital por RUC** (la clínica NO compra ni sube `.pfx`). ⟵ decisivo dado el mercado.
+- **Alta SUNAT automatizada o guiada**: el proveedor tramita/facilita el registro del emisor y la autorización (idealmente actúa como PSE que genera el certificado en el alta).
+- **Costo por emisor** bajo y predecible (lo asume la plataforma y se traslada al precio del plan).
+- **API sencilla** (enviar JSON del comprobante, recibir CDR + PDF/XML).
+> Criterio de descarte: si un proveedor exige que **cada clínica** abra su propia cuenta o consiga su propio certificado, NO sirve para este mercado.
+> SUNAT directo (self-hosted) queda **descartado** para el MVP: obligaría a gestionar un certificado por clínica manualmente.
+
 ## DECISIÓN CLAVE (pendiente del usuario) — define toda la arquitectura
 Cómo se emite a SUNAT (para multitenant, preferir proveedor con **multi-emisor**):
 1. **Vía proveedor OSE/PSE** (Nubefact, Facturactiva, Bizlinks…): enviamos JSON, ellos hacen XML+firma+SUNAT+CDR+PDF. *Recomendado.* Requiere cuenta del proveedor (token).
