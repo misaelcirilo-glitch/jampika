@@ -2,8 +2,8 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { AlertTriangle, CreditCard, DollarSign, Plus, Search } from 'lucide-react'
-import { api } from '@/lib/api'
+import { AlertTriangle, CreditCard, DollarSign, Download, Plus, Search } from 'lucide-react'
+import { api, apiDownload, ApiError } from '@/lib/api'
 import { formatCurrency, formatDate } from '@/lib/utils'
 
 const STATUS_BADGES: Record<string, { label: string; className: string }> = {
@@ -17,6 +17,26 @@ export default function BillingPage() {
   const [invoices, setInvoices] = useState<any[]>([])
   const [report, setReport] = useState<any>(null)
   const [search, setSearch] = useState('')
+  const [periodo, setPeriodo] = useState(() => new Date().toISOString().slice(0, 7)) // YYYY-MM
+  const [exportando, setExportando] = useState(false)
+  const [exportError, setExportError] = useState<string | null>(null)
+
+  const exportarRegistroVentas = async () => {
+    setExportando(true)
+    setExportError(null)
+    try {
+      await apiDownload(
+        `/billing/registro-ventas?periodo=${periodo}&formato=csv`,
+        `registro-ventas-${periodo}.csv`,
+      )
+    } catch (e) {
+      setExportError(
+        e instanceof ApiError ? e.message : 'No se pudo generar el registro de ventas.',
+      )
+    } finally {
+      setExportando(false)
+    }
+  }
 
   useEffect(() => {
     void api.get<{ data: any[] }>('/billing/invoices').then((r) => setInvoices(r.data))
@@ -78,6 +98,38 @@ export default function BillingPage() {
             <Plus className="h-5 w-5 text-white" />
           </Link>
         </div>
+      </div>
+
+      {/* Registro de Ventas SUNAT (export para el contador) */}
+      <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-100">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 className="text-base font-bold text-slate-800">Registro de Ventas (SUNAT)</h2>
+            <p className="mt-1 text-xs text-slate-500">
+              Exporta el CSV del periodo para cargarlo en tu Facturador SUNAT o software contable.
+            </p>
+          </div>
+          <div className="flex items-end gap-3">
+            <label className="flex flex-col gap-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Periodo</span>
+              <input
+                type="month"
+                value={periodo}
+                onChange={(e) => setPeriodo(e.target.value)}
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+              />
+            </label>
+            <button
+              onClick={exportarRegistroVentas}
+              disabled={exportando || !periodo}
+              className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            >
+              <Download className="h-4 w-4" />
+              {exportando ? 'Generando…' : 'Exportar registro de ventas'}
+            </button>
+          </div>
+        </div>
+        {exportError && <p className="mt-3 text-xs font-medium text-red-600">{exportError}</p>}
       </div>
 
       {/* Search + Table */}

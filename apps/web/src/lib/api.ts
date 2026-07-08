@@ -76,6 +76,32 @@ export async function apiFetch<T = unknown>(
   return data as T
 }
 
+/**
+ * Descarga un archivo binario (p.ej. CSV) autenticado y dispara la descarga en el
+ * navegador. Requiere estar online (pega al backend, no lee de Dexie).
+ */
+export async function apiDownload(path: string, filename: string): Promise<void> {
+  const token = getToken()
+  let res: Response
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+  } catch {
+    throw new ApiError(0, 'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.')
+  }
+  if (!res.ok) throw new ApiError(res.status, res.statusText)
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}
+
 export const api = {
   get: <T>(path: string) => apiFetch<T>(path),
   post: <T>(path: string, body?: unknown) =>

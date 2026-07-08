@@ -6,6 +6,11 @@ import { tipoComprobanteDesdeInvoiceType, AFECTACION_IGV } from '../comprobantes
 import { calcularTotales, validarReceptor } from '../comprobantes/numeracion.js'
 import { getEmisor } from '../comprobantes/emisor.js'
 import { reservarNumero, inferirTipoDocReceptor } from '../comprobantes/service.js'
+import {
+  construirRegistroVentas,
+  registroVentasToCsv,
+  type InvoiceParaRegistro,
+} from '../comprobantes/registro-ventas.js'
 
 const router = Router()
 router.use(authMiddleware)
@@ -198,6 +203,90 @@ router.post('/invoices/:id/pay', async (req, res, next) => {
     })
     if (updated.count === 0) return res.status(404).json({ error: 'Factura no encontrada' })
     res.json({ ok: true })
+  } catch (e) {
+    next(e)
+  }
+})
+
+// ============ REGISTRO DE VENTAS SUNAT (export para el contador) ============
+// El contador carga este archivo en su Facturador SUNAT / software contable
+// mientras no exista conexión directa a un OSE/PSE.
+const registroVentasQuery = z
+  .object({
+    periodo: z
+      .string()
+      .regex(/^\d{4}-\d{2}$/, 'periodo debe ser YYYY-MM')
+      .optional(),
+    desde: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, 'desde debe ser YYYY-MM-DD')
+      .optional(),
+    hasta: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, 'hasta debe ser YYYY-MM-DD')
+      .optional(),
+    formato: z.enum(['json', 'csv']).default('json'),
+  })
+  .refine((v) => Boolean(v.periodo) || Boolean(v.desde && v.hasta), {
+    message: 'Indica periodo (YYYY-MM) o el rango desde+hasta (YYYY-MM-DD)',
+  })
+
+/** Resuelve el rango [start, end) en UTC a partir de periodo o desde/hasta. */
+function rangoFechas(q: z.infer<typeof registroVentasQuery>): { start: Date; end: Date; etiqueta: string } {
+  if (q.periodo) {
+    const [y, m] = q.periodo.split('-').map(Number) as [number, number]
+    return {
+      start: new Date(Date.UTC(y, m - 1, 1)),
+      end: new Date(Date.UTC(y, m, 1)),
+      etiqueta: q.periodo,
+    }
+  }
+  const start = new Date(`${q.desde}T00:00:00.000Z`)
+  const end = new Date(`${q.hasta}T00:00:00.000Z`)
+  end.setUTCDate(end.getUTCDate() + 1) // rango inclusivo del día 'hasta'
+  return { start, end, etiqueta: `${q.desde}_${q.hasta}` }
+}
+
+router.get('/registro-ventas', async (req, res, next) => {
+  try {
+    const q = registroVentasQuery.parse(req.query)
+    const { start, end, etiqueta } = rangoFechas(q)
+
+    const invoices = await prisma.invoice.findMany({
+      where: {
+        clinicId: req.auth!.clinicId,
+        serie: { not: null }, // solo comprobantes emitidos (con serie/correlativo)
+        correlativo: { not: null },
+        createdAt: { gte: start, lt: end },
+      },
+      orderBy: [{ createdAt: 'asc' }, { correlativo: 'asc' }],
+    })
+
+    const entradas: InvoiceParaRegistro[] = invoices.map((i) => ({
+      createdAt: i.createdAt,
+      invoiceType: i.invoiceType,
+      serie: i.serie!,
+      correlativo: i.correlativo!,
+      receptorTipoDoc: i.receptorTipoDoc,
+      customerTaxId: i.customerTaxId,
+      customerName: i.customerName,
+      subtotal: Number(i.subtotal),
+      taxAmount: Number(i.taxAmount),
+      discount: Number(i.discount),
+      total: Number(i.total),
+      currency: i.currency,
+    }))
+
+    const registro = construirRegistroVentas(entradas)
+
+    if (q.formato === 'csv') {
+      const csv = registroVentasToCsv(registro)
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8')
+      res.setHeader('Content-Disposition', `attachment; filename="registro-ventas-${etiqueta}.csv"`)
+      return res.send('﻿' + csv) // BOM para que Excel respete acentos
+    }
+
+    return res.json({ periodo: q.periodo ?? null, desde: q.desde ?? null, hasta: q.hasta ?? null, ...registro })
   } catch (e) {
     next(e)
   }
