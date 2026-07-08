@@ -43,6 +43,7 @@ model Clinic {
   inventoryItems     InventoryItem[]
   inventoryMovements InventoryMovement[]
   syncLogs           SyncLog[]
+  comprobanteSeries  ComprobanteSerie[]
 
   @@map("clinics")
 }
@@ -230,6 +231,12 @@ model Invoice {
   electronicInvoiceId      String?   @map("electronic_invoice_id")
   electronicInvoiceStatus  String?   @map("electronic_invoice_status")
   electronicInvoiceXml     String?   @map("electronic_invoice_xml")
+  // Comprobante SUNAT (PRP-010) — emisión local; SUNAT se conecta en Fase 2.
+  serie                    String?   @db.VarChar(4)
+  correlativo              Int?
+  receptorTipoDoc          String?   @map("receptor_tipo_doc") // 0 sin doc, 1 DNI, 6 RUC
+  comprobanteEstado        String    @default("emitido") @map("comprobante_estado") // emitido | pendiente_sunat | aceptado | rechazado | anulado
+  sunatHash                String?   @map("sunat_hash")
   localId                  String?   @map("local_id")
   syncedAt                 DateTime? @map("synced_at")
   createdAt                DateTime  @default(now()) @map("created_at")
@@ -242,6 +249,23 @@ model Invoice {
 
   @@unique([clinicId, invoiceNumber])
   @@map("invoices")
+}
+
+// Series y correlativos de comprobantes por clínica (PRP-010).
+// Un contador atómico por serie (F001, B001) para no duplicar/saltar números.
+model ComprobanteSerie {
+  id              String   @id @default(uuid()) @db.Uuid
+  clinicId        String   @map("clinic_id") @db.Uuid
+  tipoComprobante String   @map("tipo_comprobante") // 01 factura, 03 boleta
+  serie           String   // F001 / B001
+  correlativo     Int      @default(0)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  @@unique([clinicId, serie])
+  @@map("comprobante_series")
 }
 
 model InvoiceItem {

@@ -2,6 +2,10 @@ import { Router } from 'express'
 import { z } from 'zod'
 import { prisma } from '../../config/database.js'
 import { authMiddleware } from '../../middleware/auth.js'
+import { tipoComprobanteDesdeInvoiceType, AFECTACION_IGV } from '../comprobantes/tipos.js'
+import { calcularTotales, validarReceptor } from '../comprobantes/numeracion.js'
+import { getEmisor } from '../comprobantes/emisor.js'
+import { reservarNumero, inferirTipoDocReceptor } from '../comprobantes/service.js'
 
 const router = Router()
 router.use(authMiddleware)
@@ -11,6 +15,8 @@ const itemSchema = z.object({
   quantity: z.number().int().positive().default(1),
   unitPrice: z.number().nonnegative(),
   serviceCode: z.string().optional().nullable(),
+  // Afectación IGV por ítem: 10 gravado (18%), 20 exonerado, 30 inafecto. Por defecto gravado.
+  afectacion: z.enum(['10', '20', '30']).optional(),
 })
 
 const invoiceSchema = z.object({
@@ -99,45 +105,81 @@ router.get('/invoices/:id', async (req, res, next) => {
 router.post('/invoices', async (req, res, next) => {
   try {
     const body = invoiceSchema.parse(req.body)
+    const clinicId = req.auth!.clinicId
 
-    const subtotal = body.items.reduce((acc, i) => acc + i.quantity * i.unitPrice, 0)
-    const taxableBase = Math.max(0, subtotal - body.discount)
-    const taxAmount = Number((taxableBase * (body.taxRate / 100)).toFixed(2))
-    const total = Number((taxableBase + taxAmount).toFixed(2))
+    // 1. Tipo de comprobante SUNAT + cálculo de importes (IGV por afectación)
+    const tipoComprobante = tipoComprobanteDesdeInvoiceType(body.invoiceType)
+    const totales = calcularTotales(
+      body.items.map((i) => ({
+        descripcion: i.description,
+        cantidad: i.quantity,
+        valorUnitario: i.unitPrice,
+        afectacion: i.afectacion ?? AFECTACION_IGV.GRAVADO,
+      })),
+      body.discount,
+    )
 
-    // Generar correlativo
-    const count = await prisma.invoice.count({ where: { clinicId: req.auth!.clinicId } })
-    const invoiceNumber = `${body.invoiceType === 'boleta' ? 'B' : 'F'}-${String(count + 1).padStart(6, '0')}`
+    // 2. Validación de receptor según reglas SUNAT (factura->RUC, boleta->DNI/monto)
+    const receptorTipoDoc = inferirTipoDocReceptor(tipoComprobante, body.customerTaxId)
+    const val = validarReceptor(tipoComprobante, receptorTipoDoc, body.customerTaxId ?? undefined, totales.importeTotal)
+    if (!val.ok) return res.status(400).json({ error: val.error })
 
-    const invoice = await prisma.invoice.create({
-      data: {
-        id: body.id,
-        clinicId: req.auth!.clinicId,
-        patientId: body.patientId,
-        appointmentId: body.appointmentId ?? null,
-        invoiceNumber,
-        invoiceType: body.invoiceType,
-        customerTaxId: body.customerTaxId ?? null,
-        customerName: body.customerName ?? null,
-        customerAddress: body.customerAddress ?? null,
-        subtotal,
-        taxRate: body.taxRate,
-        taxAmount,
-        discount: body.discount,
-        total,
-        currency: body.currency,
-        paymentMethod: body.paymentMethod ?? null,
-        items: {
-          create: body.items.map((i) => ({
-            description: i.description,
-            quantity: i.quantity,
-            unitPrice: i.unitPrice,
-            subtotal: i.quantity * i.unitPrice,
-            serviceCode: i.serviceCode ?? null,
-          })),
+    // 3. Datos del emisor (la clínica)
+    const clinic = await prisma.clinic.findUnique({ where: { id: clinicId } })
+    if (!clinic) return res.status(404).json({ error: 'Clínica no encontrada' })
+
+    // 4. Transacción: reservar correlativo atómico + emitir + persistir
+    const invoice = await prisma.$transaction(async (tx) => {
+      const { serie, correlativo, numero } = await reservarNumero(tx, clinicId, tipoComprobante)
+
+      const emision = await getEmisor('simulado').emitir({
+        tipoComprobante,
+        serie,
+        correlativo,
+        numero,
+        fechaEmision: new Date().toISOString(),
+        moneda: body.currency,
+        emisor: { ruc: clinic.taxId ?? '', razonSocial: clinic.name, direccion: clinic.address ?? undefined },
+        receptor: { tipoDoc: receptorTipoDoc, numeroDoc: body.customerTaxId ?? undefined, nombre: body.customerName ?? undefined, direccion: body.customerAddress ?? undefined },
+        items: totales.items,
+        totales,
+      })
+
+      return tx.invoice.create({
+        data: {
+          id: body.id,
+          clinicId,
+          patientId: body.patientId,
+          appointmentId: body.appointmentId ?? null,
+          invoiceNumber: numero,
+          invoiceType: body.invoiceType,
+          serie,
+          correlativo,
+          receptorTipoDoc,
+          customerTaxId: body.customerTaxId ?? null,
+          customerName: body.customerName ?? null,
+          customerAddress: body.customerAddress ?? null,
+          subtotal: totales.totalGravado + totales.totalExonerado + totales.totalInafecto,
+          taxRate: body.taxRate,
+          taxAmount: totales.totalIgv,
+          discount: totales.totalDescuento,
+          total: totales.importeTotal,
+          currency: body.currency,
+          comprobanteEstado: emision.estado === 'aceptado' ? 'emitido' : emision.estado,
+          sunatHash: emision.hash ?? null,
+          paymentMethod: body.paymentMethod ?? null,
+          items: {
+            create: body.items.map((i) => ({
+              description: i.description,
+              quantity: i.quantity,
+              unitPrice: i.unitPrice,
+              subtotal: i.quantity * i.unitPrice,
+              serviceCode: i.serviceCode ?? null,
+            })),
+          },
         },
-      },
-      include: { items: true },
+        include: { items: true },
+      })
     })
     res.status(201).json(invoice)
   } catch (e) {

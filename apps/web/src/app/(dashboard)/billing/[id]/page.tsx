@@ -37,6 +37,12 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
   if (!invoice) return <p className="text-slate-500">Cargando…</p>
 
   const isPaid = invoice.status === 'paid'
+  const tipoLabel =
+    invoice.invoiceType === 'factura'
+      ? 'Factura Electrónica'
+      : invoice.invoiceType === 'boleta'
+        ? 'Boleta de Venta Electrónica'
+        : 'Nota de Venta'
 
   return (
     <div className="min-h-screen print:bg-white">
@@ -97,9 +103,10 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
               </div>
             </div>
             <div className="rounded-lg border-2 border-primary-600 px-4 py-2 text-center">
-              <div className="text-[10px] font-bold uppercase text-slate-500">
-                {invoice.invoiceType}
+              <div className="text-[10px] font-bold uppercase leading-tight text-slate-600">
+                {tipoLabel}
               </div>
+              {clinic?.taxId && <div className="text-[9px] text-slate-400">RUC {clinic.taxId}</div>}
               <div className="font-mono text-lg font-bold text-primary-700">
                 {invoice.invoiceNumber}
               </div>
@@ -181,6 +188,13 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
               {invoice.paymentMethod}
             </div>
           )}
+
+          {/* Pie del comprobante */}
+          <div className="mt-8 border-t border-slate-200 pt-3 text-center text-[10px] leading-relaxed text-slate-400">
+            {invoice.sunatHash && <p>Resumen: {invoice.sunatHash}</p>}
+            <p>Representación impresa del comprobante electrónico.</p>
+            <p>Pendiente de envío a SUNAT.</p>
+          </div>
         </div>
       </div>
 
