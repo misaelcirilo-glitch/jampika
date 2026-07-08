@@ -275,6 +275,9 @@ model InvoiceItem {
   quantity    Int      @default(1)
   unitPrice   Decimal  @map("unit_price") @db.Decimal(10, 2)
   subtotal    Decimal  @db.Decimal(10, 2)
+  // Afectación IGV por ítem (SUNAT cat. 07): gravado | exonerado | inafecto.
+  // Permite el desglose real gravado/exonerado/inafecto en el Registro de Ventas.
+  afectacionIgv String @default("gravado") @map("afectacion_igv")
   serviceCode String?  @map("service_code")
   createdAt   DateTime @default(now()) @map("created_at")
 

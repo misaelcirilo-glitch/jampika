@@ -28,6 +28,34 @@ export const AFECTACION_IGV = {
 } as const
 export type AfectacionIgv = (typeof AFECTACION_IGV)[keyof typeof AFECTACION_IGV]
 
+/** Afectación IGV en forma legible (la que se persiste en InvoiceItem y usa la UI). */
+export const AFECTACION_NOMBRES = ['gravado', 'exonerado', 'inafecto'] as const
+export type AfectacionNombre = (typeof AFECTACION_NOMBRES)[number]
+
+/** Nombre legible → código catálogo 07 (para el cálculo de importes). */
+export function afectacionCodigo(nombre: AfectacionNombre): AfectacionIgv {
+  switch (nombre) {
+    case 'exonerado':
+      return AFECTACION_IGV.EXONERADO
+    case 'inafecto':
+      return AFECTACION_IGV.INAFECTO
+    default:
+      return AFECTACION_IGV.GRAVADO
+  }
+}
+
+/** Código catálogo 07 → nombre legible (por defecto gravado). */
+export function afectacionNombre(codigo: string): AfectacionNombre {
+  switch (codigo) {
+    case AFECTACION_IGV.EXONERADO:
+      return 'exonerado'
+    case AFECTACION_IGV.INAFECTO:
+      return 'inafecto'
+    default:
+      return 'gravado'
+  }
+}
+
 /** Catálogo 02 SUNAT — moneda (subset usado) */
 export const MONEDA = {
   PEN: 'PEN',

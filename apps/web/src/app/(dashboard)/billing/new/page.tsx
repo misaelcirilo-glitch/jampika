@@ -8,12 +8,21 @@ import { listPatients } from '@/features/patients/patients.service'
 import { api } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
 
+type AfectacionIgv = 'gravado' | 'exonerado' | 'inafecto'
+
 interface LineItem {
   description: string
   quantity: number
   unitPrice: number
+  afectacionIgv: AfectacionIgv
   serviceCode?: string
 }
+
+const AFECTACION_OPCIONES: { value: AfectacionIgv; label: string }[] = [
+  { value: 'gravado', label: 'Gravado (IGV)' },
+  { value: 'exonerado', label: 'Exonerado' },
+  { value: 'inafecto', label: 'Inafecto' },
+]
 
 interface Service {
   id: string
@@ -42,11 +51,11 @@ export default function NewInvoicePage() {
   function addServiceAsItem(serviceId: string) {
     const s = services.find((x) => x.id === serviceId)
     if (!s) return
-    setItems([...items, { description: s.name, quantity: 1, unitPrice: Number(s.price) }])
+    setItems([...items, { description: s.name, quantity: 1, unitPrice: Number(s.price), afectacionIgv: 'gravado' }])
   }
 
   function addBlankItem() {
-    setItems([...items, { description: '', quantity: 1, unitPrice: 0 }])
+    setItems([...items, { description: '', quantity: 1, unitPrice: 0, afectacionIgv: 'gravado' }])
   }
 
   function updateItem(idx: number, patch: Partial<LineItem>) {
@@ -57,10 +66,16 @@ export default function NewInvoicePage() {
     setItems(items.filter((_, i) => i !== idx))
   }
 
-  const subtotal = items.reduce((acc, i) => acc + i.quantity * i.unitPrice, 0)
-  const taxBase = Math.max(0, subtotal - discount)
-  const taxAmount = Number((taxBase * (taxRate / 100)).toFixed(2))
-  const total = Number((taxBase + taxAmount).toFixed(2))
+  // Desglose por afectación IGV: solo los ítems gravados pagan IGV.
+  const sumaAfectacion = (a: AfectacionIgv) =>
+    items.filter((i) => i.afectacionIgv === a).reduce((acc, i) => acc + i.quantity * i.unitPrice, 0)
+  const gravadoBruto = sumaAfectacion('gravado')
+  const exonerado = sumaAfectacion('exonerado')
+  const inafecto = sumaAfectacion('inafecto')
+  const subtotal = gravadoBruto + exonerado + inafecto
+  const baseGravada = Math.max(0, gravadoBruto - discount) // el descuento reduce la base gravada
+  const taxAmount = Number((baseGravada * (taxRate / 100)).toFixed(2))
+  const total = Number((baseGravada + taxAmount + exonerado + inafecto).toFixed(2))
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -163,7 +178,7 @@ export default function NewInvoicePage() {
 
           <div className="space-y-2">
             {items.map((it, idx) => (
-              <div key={idx} className="grid grid-cols-[1fr_80px_110px_110px_40px] items-center gap-2">
+              <div key={idx} className="grid grid-cols-[1fr_70px_100px_120px_100px_40px] items-center gap-2">
                 <input
                   className={input}
                   placeholder="Descripción"
@@ -185,6 +200,17 @@ export default function NewInvoicePage() {
                   value={it.unitPrice}
                   onChange={(e) => updateItem(idx, { unitPrice: Number(e.target.value) })}
                 />
+                <select
+                  className={input}
+                  value={it.afectacionIgv}
+                  onChange={(e) => updateItem(idx, { afectacionIgv: e.target.value as AfectacionIgv })}
+                >
+                  {AFECTACION_OPCIONES.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
                 <span className="text-right text-sm font-medium text-slate-700">
                   {formatCurrency(it.quantity * it.unitPrice)}
                 </span>
@@ -240,6 +266,18 @@ export default function NewInvoicePage() {
             <span className="text-slate-600">Subtotal</span>
             <span>{formatCurrency(subtotal)}</span>
           </div>
+          {exonerado > 0 && (
+            <div className="flex justify-between text-slate-600">
+              <span>Exonerado</span>
+              <span>{formatCurrency(exonerado)}</span>
+            </div>
+          )}
+          {inafecto > 0 && (
+            <div className="flex justify-between text-slate-600">
+              <span>Inafecto</span>
+              <span>{formatCurrency(inafecto)}</span>
+            </div>
+          )}
           <div className="flex justify-between text-slate-600">
             <span>IGV ({taxRate}%)</span>
             <span>{formatCurrency(taxAmount)}</span>

@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { z } from 'zod'
 import { prisma } from '../../config/database.js'
 import { authMiddleware } from '../../middleware/auth.js'
-import { tipoComprobanteDesdeInvoiceType, AFECTACION_IGV } from '../comprobantes/tipos.js'
+import { tipoComprobanteDesdeInvoiceType, afectacionCodigo } from '../comprobantes/tipos.js'
 import { calcularTotales, validarReceptor } from '../comprobantes/numeracion.js'
 import { getEmisor } from '../comprobantes/emisor.js'
 import { reservarNumero, inferirTipoDocReceptor } from '../comprobantes/service.js'
@@ -20,8 +20,8 @@ const itemSchema = z.object({
   quantity: z.number().int().positive().default(1),
   unitPrice: z.number().nonnegative(),
   serviceCode: z.string().optional().nullable(),
-  // Afectación IGV por ítem: 10 gravado (18%), 20 exonerado, 30 inafecto. Por defecto gravado.
-  afectacion: z.enum(['10', '20', '30']).optional(),
+  // Afectación IGV por ítem: gravado (18%) | exonerado | inafecto. Por defecto gravado.
+  afectacionIgv: z.enum(['gravado', 'exonerado', 'inafecto']).default('gravado'),
 })
 
 const invoiceSchema = z.object({
@@ -119,7 +119,7 @@ router.post('/invoices', async (req, res, next) => {
         descripcion: i.description,
         cantidad: i.quantity,
         valorUnitario: i.unitPrice,
-        afectacion: i.afectacion ?? AFECTACION_IGV.GRAVADO,
+        afectacion: afectacionCodigo(i.afectacionIgv),
       })),
       body.discount,
     )
@@ -179,6 +179,7 @@ router.post('/invoices', async (req, res, next) => {
               quantity: i.quantity,
               unitPrice: i.unitPrice,
               subtotal: i.quantity * i.unitPrice,
+              afectacionIgv: i.afectacionIgv,
               serviceCode: i.serviceCode ?? null,
             })),
           },
@@ -260,6 +261,7 @@ router.get('/registro-ventas', async (req, res, next) => {
         createdAt: { gte: start, lt: end },
       },
       orderBy: [{ createdAt: 'asc' }, { correlativo: 'asc' }],
+      include: { items: { select: { subtotal: true, afectacionIgv: true } } },
     })
 
     const entradas: InvoiceParaRegistro[] = invoices.map((i) => ({
@@ -270,11 +272,11 @@ router.get('/registro-ventas', async (req, res, next) => {
       receptorTipoDoc: i.receptorTipoDoc,
       customerTaxId: i.customerTaxId,
       customerName: i.customerName,
-      subtotal: Number(i.subtotal),
       taxAmount: Number(i.taxAmount),
       discount: Number(i.discount),
       total: Number(i.total),
       currency: i.currency,
+      items: i.items.map((it) => ({ subtotal: Number(it.subtotal), afectacionIgv: it.afectacionIgv })),
     }))
 
     const registro = construirRegistroVentas(entradas)

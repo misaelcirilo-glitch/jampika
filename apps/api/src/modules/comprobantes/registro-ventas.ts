@@ -3,8 +3,14 @@
 // (orden y códigos SUNAT) y genera el CSV que el contador carga en su sistema.
 // No toca BD ni red; totalmente testeable.
 
-import { IGV_RATE, TIPO_DOC_IDENTIDAD, tipoComprobanteDesdeInvoiceType } from './tipos.js'
+import { TIPO_DOC_IDENTIDAD, tipoComprobanteDesdeInvoiceType } from './tipos.js'
 import { inferirTipoDocReceptor } from './service.js'
+
+/** Ítem de un comprobante con su afectación IGV (para el desglose real). */
+export interface ItemParaRegistro {
+  subtotal: number
+  afectacionIgv: string // gravado | exonerado | inafecto
+}
 
 /** Comprobante emitido tal como llega desde la BD (valores ya numéricos). */
 export interface InvoiceParaRegistro {
@@ -15,11 +21,11 @@ export interface InvoiceParaRegistro {
   receptorTipoDoc: string | null
   customerTaxId: string | null
   customerName: string | null
-  subtotal: number
   taxAmount: number
   discount: number
   total: number
   currency: string
+  items: ItemParaRegistro[]
 }
 
 /** Fila del Registro de Ventas en el orden típico SUNAT. */
@@ -64,17 +70,24 @@ function fechaSunat(fecha: Date): string {
   return `${d}/${m}/${y}`
 }
 
+/** Suma los subtotales de los ítems con la afectación indicada. */
+function sumarPorAfectacion(items: ItemParaRegistro[], afectacion: string): number {
+  return r2(items.filter((it) => it.afectacionIgv === afectacion).reduce((acc, it) => acc + it.subtotal, 0))
+}
+
 /**
  * Construye una fila del Registro de Ventas a partir de un comprobante emitido.
- * El desglose gravado/no gravado se deriva del IGV: como el modelo Invoice solo
- * persiste `subtotal` (gravado+exonerado+inafecto) e IGV total, la base gravada
- * neta = IGV / 0.18 y el resto se reporta como exonerado (no se distingue
- * exonerado de inafecto porque no se almacena por separado).
+ * El desglose gravado/exonerado/inafecto se toma REAL de los ítems (campo
+ * `afectacionIgv`). La base gravada reportada es neta del descuento (que en la
+ * emisión reduce la base gravada, coherente con `taxAmount`). Los comprobantes
+ * legacy sin afectación explícita quedan como `gravado` por el default de BD.
  */
 export function construirFila(inv: InvoiceParaRegistro): FilaRegistroVentas {
   const tipoComprobante = tipoComprobanteDesdeInvoiceType(inv.invoiceType)
-  const baseGravada = inv.taxAmount > 0 ? r2(inv.taxAmount / IGV_RATE) : 0
-  const noGravado = Math.max(0, r2(inv.subtotal - baseGravada - inv.discount))
+  const gravadoBruto = sumarPorAfectacion(inv.items, 'gravado')
+  const exonerado = sumarPorAfectacion(inv.items, 'exonerado')
+  const inafecto = sumarPorAfectacion(inv.items, 'inafecto')
+  const baseGravada = Math.max(0, r2(gravadoBruto - inv.discount)) // el descuento reduce la base gravada
   const tipoDoc =
     inv.receptorTipoDoc ?? inferirTipoDocReceptor(tipoComprobante, inv.customerTaxId)
   return {
@@ -86,8 +99,8 @@ export function construirFila(inv: InvoiceParaRegistro): FilaRegistroVentas {
     numeroDocReceptor: inv.customerTaxId ?? '',
     nombreReceptor: inv.customerName ?? (tipoDoc === TIPO_DOC_IDENTIDAD.SIN_DOC ? 'VARIOS - VENTAS MENORES' : ''),
     baseImponibleGravada: baseGravada,
-    importeExonerado: noGravado,
-    importeInafecto: 0,
+    importeExonerado: exonerado,
+    importeInafecto: inafecto,
     igv: r2(inv.taxAmount),
     importeTotal: r2(inv.total),
     moneda: inv.currency,
