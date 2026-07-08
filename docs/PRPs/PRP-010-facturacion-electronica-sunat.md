@@ -23,8 +23,17 @@ Hoy el módulo genera un número interno (`B-000001`) que **no es un comprobante
 
 ---
 
+## Multitenant — cada clínica emite con su propio RUC (confirmado 2026-07-08)
+El SaaS es **multitenant**: cada clínica es un **emisor SUNAT distinto** (su RUC, su razón social, sus credenciales). Implicaciones:
+- **`SunatConfig` 1:1 por clínica** (RUC, razón social, dirección, ambiente, proveedor, credenciales cifradas). La clínica lo llena en Configuración; el emisor las lee por `clinicId`.
+- **Credenciales por tenant**: cada RUC necesita su certificado/cuenta. Dos modelos de proveedor:
+  - **Multi-emisor / delegado (RECOMENDADO)**: la plataforma tiene UNA integración con el proveedor/OSE y **registra muchos emisores (RUCs)** bajo ella. Las clínicas NO manejan certificados. Ideal para SaaS. Elegir un proveedor que lo soporte.
+  - **Por-cuenta**: cada clínica abre su propia cuenta/token con el proveedor, o sube su propio `.pfx` (directo). Más fricción de onboarding.
+- **Aislamiento estricto**: series/correlativos y credenciales NUNCA se comparten entre clínicas (ya garantizado por `clinicId` en `comprobante_series`).
+- **Onboarding**: al activar facturación, la clínica registra su RUC → validar → (en multi-emisor) darla de alta en el proveedor.
+
 ## DECISIÓN CLAVE (pendiente del usuario) — define toda la arquitectura
-Cómo se emite a SUNAT:
+Cómo se emite a SUNAT (para multitenant, preferir proveedor con **multi-emisor**):
 1. **Vía proveedor OSE/PSE** (Nubefact, Facturactiva, Bizlinks…): enviamos JSON, ellos hacen XML+firma+SUNAT+CDR+PDF. *Recomendado.* Requiere cuenta del proveedor (token).
 2. **Directo a SUNAT (self-hosted)**: generamos XML UBL 2.1, firmamos con certificado `.pfx`, enviamos al web service SUNAT, procesamos CDR. Control total, ~5x más trabajo y mantenimiento. Requiere RUC + certificado.
 3. **Solo base lista (simulado)**: estructura correcta sin conectar aún. ← **implementado en Fase 1**.
