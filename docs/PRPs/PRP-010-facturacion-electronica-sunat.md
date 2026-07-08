@@ -1,6 +1,6 @@
 # PRP-010: Facturación Electrónica SUNAT (Perú)
 
-> **Estado**: EN PROGRESO — Fase 1 (fundación) implementada en local. Decisión de integración PENDIENTE del usuario.
+> **Estado**: Fase 1 ✅ EN PRODUCCIÓN (2026-07-08) — emisión simulada de boleta/factura con numeración SUNAT + comprobante imprimible en jampika.com. Migración aplicada en Neon. **Fase 2 (conexión real a SUNAT) PENDIENTE de la decisión de integración** (proveedor OSE/PSE vs directo).
 > **Fecha**: 2026-07-08
 > **Proyecto**: Jampika (SaaS clínicas offline-first)
 > **Mercado de esta feature**: **Perú** (SUNAT). Otros países (CO=DIAN, EC=SRI, BO, MX, CL) quedan fuera de este PRP.
