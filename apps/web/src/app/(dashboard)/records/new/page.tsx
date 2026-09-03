@@ -80,12 +80,12 @@ function NewRecordForm() {
     setPrescriptions(prescriptions.filter((_, i) => i !== idx))
   }
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!user || !patientId) return
+  // Crea el registro (append-only) y lo devuelve. null si falta contexto.
+  async function save() {
+    if (!user || !patientId) return null
     setSaving(true)
     try {
-      await createRecord({
+      return await createRecord({
         clinicId: user.clinicId,
         patientId,
         doctorId: user.id,
@@ -104,10 +104,21 @@ function NewRecordForm() {
         localId: null,
         syncedAt: null,
       })
-      router.replace(`/patients/${patientId}`)
     } finally {
       setSaving(false)
     }
+  }
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    const record = await save()
+    if (record) router.replace(`/patients/${patientId}`)
+  }
+
+  // "Imprimir Receta": guarda la consulta y abre su vista de impresión.
+  async function saveAndPrint() {
+    const record = await save()
+    if (record) router.push(`/records/${record.id}/print`)
   }
 
   const input = 'w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors'
@@ -326,7 +337,12 @@ function NewRecordForm() {
         {/* Bottom Action Bar */}
         <div className="sticky bottom-0 flex items-center justify-between rounded-2xl bg-white p-4 shadow-lg border border-slate-100">
           <div className="flex gap-3">
-            <button type="button" className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-700">
+            <button
+              type="button"
+              onClick={saveAndPrint}
+              disabled={saving}
+              className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-700 disabled:opacity-50"
+            >
               <Printer className="h-4 w-4" /> Imprimir Receta
             </button>
             <button type="button" className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-700">

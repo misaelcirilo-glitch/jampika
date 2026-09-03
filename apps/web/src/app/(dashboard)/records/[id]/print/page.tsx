@@ -99,11 +99,11 @@ export default function PrintRecipePage({ params }: { params: Promise<{ id: stri
           </div>
 
           {/* Diagnósticos */}
-          {record.diagnoses.length > 0 && (
+          {(record.diagnoses?.length ?? 0) > 0 && (
             <div className="mb-6">
               <p className="mb-2 text-[10px] font-bold uppercase text-slate-400">Diagnóstico</p>
               <ul className="list-disc pl-5 text-sm">
-                {record.diagnoses.map((d) => (
+                {(record.diagnoses ?? []).map((d) => (
                   <li key={d.code}>
                     <span className="font-mono text-slate-500">{d.code}</span>{' '}
                     {d.description}
@@ -121,11 +121,11 @@ export default function PrintRecipePage({ params }: { params: Promise<{ id: stri
                 Indicaciones
               </span>
             </div>
-            {record.prescriptions.length === 0 ? (
+            {(record.prescriptions?.length ?? 0) === 0 ? (
               <p className="italic text-slate-400">Sin medicación prescrita.</p>
             ) : (
               <ol className="space-y-3 text-sm">
-                {record.prescriptions.map((p, idx) => (
+                {(record.prescriptions ?? []).map((p, idx) => (
                   <li key={idx} className="border-b border-dashed border-slate-200 pb-2 last:border-b-0">
                     <div className="font-semibold text-slate-800">
                       {idx + 1}. {p.medication}
