@@ -10,6 +10,7 @@ import type {
   Patient,
   SyncQueueItem,
 } from '@jampika/shared'
+import type { PatientFile } from '@/features/files/types'
 
 export interface LocalMeta {
   key: string
@@ -25,6 +26,7 @@ export class JampikaDB extends Dexie {
   inventory_items!: Table<any, string>
   inventory_movements!: Table<any, string>
   clinic_medications!: Table<ClinicMedication, string>
+  patient_files!: Table<PatientFile, string>
   sync_queue!: Table<SyncQueueItem, string>
   meta!: Table<LocalMeta, string>
 
@@ -43,6 +45,10 @@ export class JampikaDB extends Dexie {
     })
     this.version(2).stores({
       clinic_medications: 'id, clinicId, name, usageCount',
+    })
+    // v3: caché local de metadatos de archivos del paciente (listado offline).
+    this.version(3).stores({
+      patient_files: 'id, clinicId, patientId, category, createdAt',
     })
   }
 }

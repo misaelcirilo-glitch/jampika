@@ -44,6 +44,7 @@ model Clinic {
   inventoryMovements InventoryMovement[]
   syncLogs           SyncLog[]
   comprobanteSeries  ComprobanteSerie[]
+  patientFiles       PatientFile[]
 
   @@map("clinics")
 }
@@ -131,10 +132,35 @@ model Patient {
   appointments   Appointment[]
   invoices       Invoice[]
   inventoryMoves InventoryMovement[]
+  files          PatientFile[]
 
   @@unique([clinicId, documentType, documentNumber])
   @@index([clinicId, lastName, firstName])
   @@map("patients")
+}
+
+// ============================================================
+// ARCHIVOS DEL PACIENTE (fotos, RX, analíticas, documentos).
+// Binario en Vercel Blob; aquí solo metadatos + URL. Aislado por clínica.
+// ============================================================
+model PatientFile {
+  id         String   @id @default(uuid()) @db.Uuid
+  clinicId   String   @map("clinic_id") @db.Uuid
+  patientId  String   @map("patient_id") @db.Uuid
+  uploadedBy String?  @map("uploaded_by") @db.Uuid
+  category   String // photo | rx | lab | document
+  fileName   String   @map("file_name")
+  mimeType   String   @map("mime_type")
+  size       Int
+  url        String
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  clinic  Clinic  @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@index([clinicId])
+  @@map("patient_files")
 }
 
 // ============================================================

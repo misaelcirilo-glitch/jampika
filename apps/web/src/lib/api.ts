@@ -102,6 +102,32 @@ export async function apiDownload(path: string, filename: string): Promise<void>
   URL.revokeObjectURL(url)
 }
 
+/**
+ * Sube un archivo (FormData) autenticado. NO fija Content-Type: el navegador pone
+ * el boundary de multipart. Requiere estar online (pega al backend → Vercel Blob).
+ */
+export async function apiUpload<T = unknown>(path: string, form: FormData): Promise<T> {
+  const doFetch = async (): Promise<Response> => {
+    const token = getToken()
+    return fetch(`${API_URL}${path}`, {
+      method: 'POST',
+      body: form,
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+  }
+  let res: Response
+  try {
+    res = await doFetch()
+    if (res.status === 401 && (await tryRefresh())) res = await doFetch()
+  } catch {
+    throw new ApiError(0, 'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.')
+  }
+  const contentType = res.headers.get('content-type') ?? ''
+  const data = contentType.includes('application/json') ? await res.json() : null
+  if (!res.ok) throw new ApiError(res.status, (data as any)?.error ?? res.statusText, data)
+  return data as T
+}
+
 export const api = {
   get: <T>(path: string) => apiFetch<T>(path),
   post: <T>(path: string, body?: unknown) =>

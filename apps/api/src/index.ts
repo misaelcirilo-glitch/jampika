@@ -7,6 +7,7 @@ import { env } from './config/env.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import authRoutes from './modules/auth/auth.routes.js'
 import patientsRoutes from './modules/patients/patients.routes.js'
+import filesRoutes from './modules/files/files.routes.js'
 import appointmentsRoutes from './modules/appointments/appointments.routes.js'
 import recordsRoutes from './modules/records/records.routes.js'
 import billingRoutes from './modules/billing/billing.routes.js'
@@ -44,6 +45,7 @@ app.get('/health', (_req, res) => {
 
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/patients', patientsRoutes)
+app.use('/api/v1/patients', filesRoutes) // archivos del paciente (sub-recurso)
 app.use('/api/v1/appointments', appointmentsRoutes)
 app.use('/api/v1/records', recordsRoutes)
 app.use('/api/v1/medications', medicationsRoutes)
