@@ -1,4 +1,4 @@
-import { api, apiUpload } from '@/lib/api'
+import { api, apiGetBlob, apiUpload } from '@/lib/api'
 import { db } from '@/lib/db/schema'
 import type { FileCategory, PatientFile } from './types'
 
@@ -54,6 +54,16 @@ export async function listPatientFiles(patientId: string): Promise<PatientFile[]
     const cached = await db.patient_files.where('patientId').equals(patientId).toArray()
     return cached.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
   }
+}
+
+/**
+ * Descarga el binario privado del archivo y devuelve un objectURL para mostrarlo
+ * (miniatura) o abrirlo. Quien llama debe revocar el URL con URL.revokeObjectURL.
+ * Requiere red (el binario no está cacheado en Dexie).
+ */
+export async function fetchPatientFileUrl(patientId: string, fileId: string): Promise<string> {
+  const blob = await apiGetBlob(`/patients/${patientId}/files/${fileId}/content`)
+  return URL.createObjectURL(blob)
 }
 
 export async function deletePatientFile(patientId: string, fileId: string): Promise<void> {

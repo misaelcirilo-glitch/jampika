@@ -128,6 +128,29 @@ export async function apiUpload<T = unknown>(path: string, form: FormData): Prom
   return data as T
 }
 
+/**
+ * Descarga un recurso binario autenticado y lo devuelve como Blob (para crear un
+ * objectURL). Usado para servir archivos privados del paciente que no tienen URL
+ * pública. Requiere estar online.
+ */
+export async function apiGetBlob(path: string): Promise<Blob> {
+  const doFetch = async (): Promise<Response> => {
+    const token = getToken()
+    return fetch(`${API_URL}${path}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+  }
+  let res: Response
+  try {
+    res = await doFetch()
+    if (res.status === 401 && (await tryRefresh())) res = await doFetch()
+  } catch {
+    throw new ApiError(0, 'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.')
+  }
+  if (!res.ok) throw new ApiError(res.status, res.statusText)
+  return res.blob()
+}
+
 export const api = {
   get: <T>(path: string) => apiFetch<T>(path),
   post: <T>(path: string, body?: unknown) =>

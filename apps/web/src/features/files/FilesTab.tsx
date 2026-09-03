@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { FileText, ImageIcon, Loader2, Trash2, Upload } from 'lucide-react'
 import { ApiError } from '@/lib/api'
 import { formatDate } from '@/lib/utils'
-import { deletePatientFile, listPatientFiles, uploadPatientFile } from './files.service'
+import { deletePatientFile, fetchPatientFileUrl, listPatientFiles, uploadPatientFile } from './files.service'
 import { CATEGORY_LABELS, FILE_CATEGORIES, type FileCategory, type PatientFile } from './types'
 
 const CATEGORY_STYLE: Record<FileCategory, string> = {
@@ -27,6 +27,11 @@ export default function FilesTab({ patientId }: { patientId: string }) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  // Los blobs son privados: se sirven por el endpoint autenticado y se muestran
+  // como objectURL. Guardamos fileId → objectURL y los revocamos al desmontar.
+  const [urls, setUrls] = useState<Record<string, string>>({})
+  const urlsRef = useRef<Record<string, string>>({})
+  urlsRef.current = urls
 
   const load = () => {
     setLoading(true)
@@ -35,6 +40,48 @@ export default function FilesTab({ patientId }: { patientId: string }) {
       .finally(() => setLoading(false))
   }
   useEffect(load, [patientId])
+
+  // Descarga (autenticado) el binario de cada archivo nuevo y crea su objectURL.
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      for (const f of files) {
+        if (urlsRef.current[f.id]) continue
+        try {
+          const u = await fetchPatientFileUrl(patientId, f.id)
+          if (cancelled) {
+            URL.revokeObjectURL(u)
+            return
+          }
+          setUrls((prev) => {
+            if (prev[f.id]) {
+              URL.revokeObjectURL(u)
+              return prev
+            }
+            return { ...prev, [f.id]: u }
+          })
+        } catch {
+          /* sin red o error: se muestra el placeholder */
+        }
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [files, patientId])
+
+  // Revoca todos los objectURL al desmontar.
+  useEffect(
+    () => () => {
+      Object.values(urlsRef.current).forEach((u) => URL.revokeObjectURL(u))
+    },
+    [],
+  )
+
+  function openFile(f: PatientFile) {
+    const u = urls[f.id]
+    if (u) window.open(u, '_blank', 'noopener')
+  }
 
   async function onFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -57,6 +104,13 @@ export default function FilesTab({ patientId }: { patientId: string }) {
     try {
       await deletePatientFile(patientId, f.id)
       setFiles((prev) => prev.filter((x) => x.id !== f.id))
+      setUrls((prev) => {
+        const u = prev[f.id]
+        if (u) URL.revokeObjectURL(u)
+        const next = { ...prev }
+        delete next[f.id]
+        return next
+      })
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'No se pudo eliminar')
     }
@@ -119,16 +173,26 @@ export default function FilesTab({ patientId }: { patientId: string }) {
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {files.map((f) => (
             <div key={f.id} className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white">
-              <a href={f.url} target="_blank" rel="noreferrer" className="block">
+              <button
+                type="button"
+                onClick={() => openFile(f)}
+                disabled={!urls[f.id]}
+                className="block w-full text-left disabled:cursor-default"
+                title={urls[f.id] ? 'Abrir' : 'Cargando…'}
+              >
                 <div className="flex h-32 items-center justify-center bg-slate-50">
                   {isImage(f) ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={f.url} alt={f.fileName} className="h-full w-full object-cover" />
+                    urls[f.id] ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={urls[f.id]} alt={f.fileName} className="h-full w-full object-cover" />
+                    ) : (
+                      <Loader2 className="h-5 w-5 animate-spin text-slate-300" />
+                    )
                   ) : (
                     <FileText className="h-10 w-10 text-slate-300" />
                   )}
                 </div>
-              </a>
+              </button>
               <button
                 type="button"
                 onClick={() => onDelete(f)}
