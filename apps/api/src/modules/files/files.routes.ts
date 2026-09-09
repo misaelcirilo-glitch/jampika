@@ -44,7 +44,7 @@ router.post('/:patientId/files', uploadSingle, async (req, res, next) => {
       select: { id: true },
     })
     if (!patient) return res.status(404).json({ error: 'Paciente no encontrado' })
-    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    if (!process.env.BLOB_STORE_ID) {
       return res.status(503).json({ error: 'Almacenamiento de archivos no configurado' })
     }
     const file = req.file
@@ -58,11 +58,11 @@ router.post('/:patientId/files', uploadSingle, async (req, res, next) => {
     const ext = file.originalname.includes('.') ? file.originalname.split('.').pop() : undefined
     const key = `clinic/${clinicId}/patient/${patient.id}/${randomUUID()}${ext ? '.' + ext : ''}`
     // Store PRIVADO: el binario nunca es público. Se sirve por el endpoint
-    // autenticado `/content` (get + stream), no por la URL directa.
+    // autenticado `/content` (get + stream), no por la URL directa. En Vercel la
+    // autenticación es automática (OIDC del store conectado); NO se pasa token.
     const blob = await put(key, file.buffer, {
       access: 'private',
       contentType: file.mimetype,
-      token: process.env.BLOB_READ_WRITE_TOKEN,
     })
 
     const row = await prisma.patientFile.create({
@@ -108,10 +108,10 @@ router.get('/:patientId/files/:fileId/content', async (req, res, next) => {
       },
     })
     if (!file) return res.status(404).json({ error: 'Archivo no encontrado' })
-    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    if (!process.env.BLOB_STORE_ID) {
       return res.status(503).json({ error: 'Almacenamiento de archivos no configurado' })
     }
-    const result = await get(file.url, { access: 'private', token: process.env.BLOB_READ_WRITE_TOKEN })
+    const result = await get(file.url, { access: 'private' })
     if (!result || result.statusCode !== 200) return res.status(404).json({ error: 'Archivo no encontrado' })
     res.setHeader('Content-Type', result.blob.contentType || file.mimeType)
     res.setHeader('X-Content-Type-Options', 'nosniff')
@@ -129,9 +129,9 @@ router.delete('/:patientId/files/:fileId', async (req, res, next) => {
       where: { id: String(req.params.fileId), patientId: String(req.params.patientId), clinicId: req.auth!.clinicId },
     })
     if (!file) return res.status(404).json({ error: 'Archivo no encontrado' })
-    if (process.env.BLOB_READ_WRITE_TOKEN) {
+    if (process.env.BLOB_STORE_ID) {
       try {
-        await del(file.url, { token: process.env.BLOB_READ_WRITE_TOKEN })
+        await del(file.url)
       } catch {
         /* huérfano tolerable: seguimos borrando la fila */
       }
