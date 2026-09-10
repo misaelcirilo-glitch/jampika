@@ -17,6 +17,7 @@ import { createAppointment, listAppointments, updateAppointment } from '@/featur
 import { listPatients } from '@/features/patients/patients.service'
 import { api } from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
+import { hasModule } from '@/lib/professions'
 
 interface Doctor {
   id: string
@@ -59,6 +60,7 @@ function startOfWeek(d: Date): Date {
 
 export default function AppointmentsPage() {
   const user = useAuthStore((s) => s.user)
+  const clinic = useAuthStore((s) => s.clinic)
   const [view, setView] = useState<'day' | 'week' | 'month'>('day')
   const [currentDate, setCurrentDate] = useState(new Date())
   const [appointments, setAppointments] = useState<Appointment[]>([])
@@ -611,6 +613,7 @@ export default function AppointmentsPage() {
             await refresh()
           }}
           clinicId={user?.clinicId ?? ''}
+          hasVideo={hasModule(clinic, 'telemedicina')}
         />
       )}
     </div>
@@ -624,6 +627,7 @@ function NewApptModal({
   onClose,
   onSaved,
   clinicId,
+  hasVideo,
 }: {
   initial: { date: string; time: string; doctorId: string; editing?: Appointment }
   doctors: Doctor[]
@@ -631,8 +635,21 @@ function NewApptModal({
   onClose: () => void
   onSaved: () => void
   clinicId: string
+  hasVideo: boolean
 }) {
   const editing = initial.editing
+
+  async function startVideo() {
+    if (!editing) return
+    try {
+      const r = await api.get<{ roomUrl: string; patientJoinUrl: string }>(`/appointments/${editing.id}/video`)
+      await navigator.clipboard?.writeText(r.patientJoinUrl).catch(() => {})
+      window.open(r.roomUrl, '_blank', 'noopener')
+      alert(`Videollamada abierta.\nEnlace para el paciente (copiado):\n${r.patientJoinUrl}`)
+    } catch {
+      alert('No se pudo iniciar la videollamada.')
+    }
+  }
   const [form, setForm] = useState({
     patientId: editing?.patientId ?? '',
     doctorId: initial.doctorId,
@@ -826,7 +843,7 @@ function NewApptModal({
         </div>
 
         <div className="flex items-center justify-between gap-3 border-t bg-slate-50 p-4">
-          <div>
+          <div className="flex gap-2">
             {editing && (
               <button
                 onClick={cancelAppt}
@@ -834,6 +851,14 @@ function NewApptModal({
                 className="rounded-lg border border-red-300 px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-red-600 hover:bg-red-50 disabled:opacity-50"
               >
                 {deleting ? 'Cancelando…' : 'Cancelar cita'}
+              </button>
+            )}
+            {editing && hasVideo && (
+              <button
+                onClick={startVideo}
+                className="rounded-lg border border-emerald-300 px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-emerald-700 hover:bg-emerald-50"
+              >
+                📹 Videollamada
               </button>
             )}
           </div>

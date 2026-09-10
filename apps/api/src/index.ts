@@ -20,6 +20,8 @@ import remindersRoutes from './modules/reminders/reminders.routes.js'
 import whatsappWebhookRoutes from './modules/whatsapp/webhook.routes.js'
 import whatsappChatRoutes from './modules/whatsapp/chat.routes.js'
 import bookingRoutes from './modules/booking/booking.routes.js'
+import videoRoutes from './modules/telemedicine/video.routes.js'
+import publicVideoRoutes from './modules/telemedicine/public.routes.js'
 
 const app = express()
 
@@ -51,6 +53,7 @@ app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/patients', patientsRoutes)
 app.use('/api/v1/patients', filesRoutes) // archivos del paciente (sub-recurso)
 app.use('/api/v1/appointments', appointmentsRoutes)
+app.use('/api/v1/appointments', videoRoutes) // GET /:id/video (telemedicina, auth + módulo)
 app.use('/api/v1/records', recordsRoutes)
 app.use('/api/v1/medications', medicationsRoutes)
 app.use('/api/v1/billing', billingRoutes)
@@ -62,6 +65,7 @@ app.use('/api/v1/reminders', remindersRoutes)
 app.use('/api/v1/whatsapp', whatsappWebhookRoutes) // webhook público (verify + inbound)
 app.use('/api/v1/whatsapp/chat', whatsappChatRoutes) // inbox (auth + módulo chat)
 app.use('/api/v1/public/booking', bookingRoutes) // reserva online pública (sin auth)
+app.use('/api/v1/public/video', publicVideoRoutes) // videoconsulta pública (token HMAC)
 
 app.use(errorHandler)
 
