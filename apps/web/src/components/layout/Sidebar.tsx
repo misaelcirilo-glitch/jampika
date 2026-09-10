@@ -7,6 +7,7 @@ import {
   FileText,
   LayoutDashboard,
   LogOut,
+  MessageCircle,
   Package,
   Receipt,
   Settings,
@@ -31,6 +32,7 @@ export function Sidebar() {
     { href: '/records', label: prof.noteStyle === 'soap' ? 'Historias' : 'Notas', icon: FileText },
     { href: '/billing', label: 'Facturación', icon: Receipt },
     ...(hasModule(clinic, 'inventario') ? [{ href: '/inventory', label: 'Inventario', icon: Package }] : []),
+    ...(hasModule(clinic, 'chat') ? [{ href: '/chat', label: 'WhatsApp', icon: MessageCircle }] : []),
   ]
 
   return (

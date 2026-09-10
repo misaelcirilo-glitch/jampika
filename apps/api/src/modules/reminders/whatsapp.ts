@@ -14,13 +14,26 @@ export interface SendResult {
   simulated: boolean
 }
 
+// Config de WhatsApp POR CLÍNICA (modelo Verioska: número por tenant). El token suele
+// ser el System User compartido (env); phoneId/template pueden ser propios del tenant.
+// Todo opcional: lo no provisto cae al env compartido.
+export interface WhatsAppConfig {
+  token?: string
+  phoneId?: string
+  template?: string
+  lang?: string
+}
+
 const GRAPH_VERSION = 'v21.0'
 
-export async function sendAppointmentReminder(msg: ReminderMessage): Promise<SendResult> {
-  const token = process.env.WHATSAPP_TOKEN
-  const phoneId = process.env.WHATSAPP_PHONE_ID
-  const template = process.env.WHATSAPP_TEMPLATE
-  const lang = process.env.WHATSAPP_TEMPLATE_LANG ?? 'es'
+export async function sendAppointmentReminder(
+  msg: ReminderMessage,
+  config?: WhatsAppConfig,
+): Promise<SendResult> {
+  const token = config?.token || process.env.WHATSAPP_TOKEN
+  const phoneId = config?.phoneId || process.env.WHATSAPP_PHONE_ID
+  const template = config?.template || process.env.WHATSAPP_TEMPLATE
+  const lang = config?.lang || process.env.WHATSAPP_TEMPLATE_LANG || 'es'
 
   if (!token || !phoneId || !template) {
     console.log(
@@ -56,6 +69,27 @@ export async function sendAppointmentReminder(msg: ReminderMessage): Promise<Sen
   if (!res.ok) {
     const body = await res.text()
     throw new Error(`WhatsApp ${res.status}: ${body.slice(0, 300)}`)
+  }
+  return { ok: true, simulated: false }
+}
+
+// Envío de texto libre (solo válido dentro de la ventana de 24h de WhatsApp; fuera de
+// ella la API real exige plantilla). Usado por el inbox de chat.
+export async function sendText(to: string, body: string, config?: WhatsAppConfig): Promise<SendResult> {
+  const token = config?.token || process.env.WHATSAPP_TOKEN
+  const phoneId = config?.phoneId || process.env.WHATSAPP_PHONE_ID
+  if (!token || !phoneId) {
+    console.log(`[wa:simulado:text] to=${to} body="${body.slice(0, 80)}"`)
+    return { ok: true, simulated: true }
+  }
+  const res = await fetch(`https://graph.facebook.com/${GRAPH_VERSION}/${phoneId}/messages`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messaging_product: 'whatsapp', to, type: 'text', text: { body } }),
+  })
+  if (!res.ok) {
+    const t = await res.text()
+    throw new Error(`WhatsApp ${res.status}: ${t.slice(0, 300)}`)
   }
   return { ok: true, simulated: false }
 }

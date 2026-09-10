@@ -17,6 +17,8 @@ import dashboardRoutes from './modules/dashboard/dashboard.routes.js'
 import settingsRoutes from './modules/settings/settings.routes.js'
 import syncRoutes from './modules/sync/sync.routes.js'
 import remindersRoutes from './modules/reminders/reminders.routes.js'
+import whatsappWebhookRoutes from './modules/whatsapp/webhook.routes.js'
+import whatsappChatRoutes from './modules/whatsapp/chat.routes.js'
 
 const app = express()
 
@@ -56,6 +58,8 @@ app.use('/api/v1/dashboard', dashboardRoutes)
 app.use('/api/v1/settings', settingsRoutes)
 app.use('/api/v1/sync', syncRoutes)
 app.use('/api/v1/reminders', remindersRoutes)
+app.use('/api/v1/whatsapp', whatsappWebhookRoutes) // webhook público (verify + inbound)
+app.use('/api/v1/whatsapp/chat', whatsappChatRoutes) // inbox (auth + módulo chat)
 
 app.use(errorHandler)
 

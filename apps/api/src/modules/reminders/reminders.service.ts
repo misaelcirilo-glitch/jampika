@@ -1,5 +1,5 @@
 import { prisma } from '../../config/database.js'
-import { sendAppointmentReminder } from './whatsapp.js'
+import { sendAppointmentReminder, type WhatsAppConfig } from './whatsapp.js'
 
 // Códigos de país (calling code) para normalizar teléfonos locales.
 const CALLING_CODE: Record<string, string> = {
@@ -75,13 +75,19 @@ export async function runReminders(): Promise<RunResult> {
     const phone = a.patient.phone ? normalizePhone(a.patient.phone, a.clinic.country) : null
     if (!phone) { skipped++; continue }
 
+    // Config WhatsApp por clínica (modelo por tenant); si no la tiene, cae al número compartido (env).
+    const waConfig = (settings.whatsapp ?? undefined) as WhatsAppConfig | undefined
+
     try {
-      const r = await sendAppointmentReminder({
-        to: phone,
-        patientName: a.patient.firstName,
-        clinicName: a.clinic.name,
-        whenText: formatWhen(a.startTime, a.clinic.timezone),
-      })
+      const r = await sendAppointmentReminder(
+        {
+          to: phone,
+          patientName: a.patient.firstName,
+          clinicName: a.clinic.name,
+          whenText: formatWhen(a.startTime, a.clinic.timezone),
+        },
+        waConfig,
+      )
       await prisma.appointment.update({
         where: { id: a.id },
         data: { reminderSent: true, reminderSentAt: new Date() },

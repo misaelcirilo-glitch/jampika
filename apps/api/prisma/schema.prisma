@@ -431,3 +431,38 @@ model SyncLog {
   @@index([clinicId, tableName, serverTimestamp])
   @@map("sync_log")
 }
+
+// ============================================================
+// WHATSAPP (chat clínica↔paciente, add-on por tenant — PRP-014)
+// Scalar-only (FKs en SQL) para no acoplar Clinic/Patient.
+// ============================================================
+model WhatsappConversation {
+  id                 String   @id @default(uuid()) @db.Uuid
+  clinicId           String   @map("clinic_id") @db.Uuid
+  patientId          String?  @map("patient_id") @db.Uuid
+  phone              String
+  lastMessageAt      DateTime @default(now()) @map("last_message_at")
+  lastMessagePreview String?  @map("last_message_preview")
+  unreadCount        Int      @default(0) @map("unread_count")
+  status             String   @default("open")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@unique([clinicId, phone])
+  @@index([clinicId, lastMessageAt])
+  @@map("whatsapp_conversations")
+}
+
+model WhatsappMessage {
+  id             String   @id @default(uuid()) @db.Uuid
+  conversationId String   @map("conversation_id") @db.Uuid
+  clinicId       String   @map("clinic_id") @db.Uuid
+  direction      String // in | out
+  type           String   @default("text")
+  body           String?
+  waMessageId    String?  @map("wa_message_id")
+  status         String?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([conversationId, createdAt])
+  @@map("whatsapp_messages")
+}
