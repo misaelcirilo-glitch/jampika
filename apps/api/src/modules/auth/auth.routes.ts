@@ -24,6 +24,7 @@ const registerSchema = z.object({
   clinicName: z.string().min(2),
   slug: z.string().min(3).regex(/^[a-z0-9-]+$/),
   country: z.enum(['PE', 'CO', 'EC', 'BO', 'MX', 'CL']),
+  professionType: z.enum(['medico', 'psicologo', 'terapeuta', 'coach', 'homeopata']).optional(),
   adminFirstName: z.string().min(1),
   adminLastName: z.string().min(1),
   adminEmail: z.string().email(),

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { COUNTRY_CONFIG, type CountryCode } from '@jampika/shared'
 import { api } from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
+import { PROFESSION_LIST, type ProfessionType } from '@/lib/professions'
 
 const COUNTRIES = Object.entries(COUNTRY_CONFIG) as [CountryCode, { name: string }][]
 
@@ -27,6 +28,7 @@ export default function RegisterPage() {
   const [slug, setSlug] = useState('')
   const [slugTouched, setSlugTouched] = useState(false)
   const [country, setCountry] = useState<CountryCode>('PE')
+  const [professionType, setProfessionType] = useState<ProfessionType>('medico')
   const [adminFirstName, setAdminFirstName] = useState('')
   const [adminLastName, setAdminLastName] = useState('')
   const [adminEmail, setAdminEmail] = useState('')
@@ -48,6 +50,7 @@ export default function RegisterPage() {
         clinicName,
         slug,
         country,
+        professionType,
         adminFirstName,
         adminLastName,
         adminEmail,
@@ -88,7 +91,7 @@ export default function RegisterPage() {
             J
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Jampika</h1>
-          <p className="mt-1 text-sm text-slate-500">Gestión de clínicas médicas</p>
+          <p className="mt-1 text-sm text-slate-500">Gestión para profesionales de salud y bienestar</p>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xl">
@@ -111,6 +114,23 @@ export default function RegisterPage() {
                 placeholder="Clínica San Rafael"
                 className={inputClass}
               />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Tipo de profesional</label>
+              <select
+                required
+                value={professionType}
+                onChange={(e) => setProfessionType(e.target.value as ProfessionType)}
+                className={inputClass}
+              >
+                {PROFESSION_LIST.map((p) => (
+                  <option key={p.key} value={p.key}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-slate-400">Activa los módulos y la terminología adecuados a tu práctica.</p>
             </div>
 
             <div>

@@ -7,6 +7,7 @@ import { searchCie10 } from '@jampika/shared'
 import { createRecord } from '@/features/records/records.service'
 import { searchAllMedications, syncClinicMedications, type MedicationResult } from '@/features/medications/medications.service'
 import { useAuthStore } from '@/stores/authStore'
+import { getProfession, hasModule } from '@/lib/professions'
 import { ArrowLeft, Clock, Pill, Printer, Send, Trash2, Upload } from 'lucide-react'
 
 function NewRecordForm() {
@@ -14,6 +15,10 @@ function NewRecordForm() {
   const params = useSearchParams()
   const patientId = params.get('patientId') ?? ''
   const user = useAuthStore((s) => s.user)
+  const clinic = useAuthStore((s) => s.clinic)
+  const prof = getProfession(clinic?.professionType)
+  const showCie10 = hasModule(clinic, 'cie10')
+  const showRecetas = hasModule(clinic, 'recetas')
 
   const [form, setForm] = useState({
     recordType: 'consultation' as RecordType,
@@ -140,7 +145,7 @@ function NewRecordForm() {
           <ArrowLeft className="h-5 w-5" />
         </button>
         <h1 className="text-lg font-bold text-slate-800">
-          Nueva Consulta: {user ? `Dr. ${user.firstName}` : ''}
+          Nueva {prof.session}: {user ? user.firstName : ''}
         </h1>
       </div>
 
@@ -201,7 +206,8 @@ function NewRecordForm() {
               </div>
             ))}
 
-            {/* Diagnoses */}
+            {/* Diagnoses (CIE-10) — solo si el módulo está activo */}
+            {showCie10 && (
             <div className="rounded-2xl bg-white shadow-sm border border-slate-100 p-5">
               <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-700">Diagnósticos (CIE-10)</h3>
               <input
@@ -237,11 +243,13 @@ function NewRecordForm() {
                 </div>
               )}
             </div>
+            )}
           </div>
 
           {/* Right Column: Prescriptions + Files */}
           <div className="space-y-4">
-            {/* Prescriptions */}
+            {/* Prescriptions — solo si el módulo 'recetas' está activo */}
+            {showRecetas && (
             <div className="rounded-2xl bg-white shadow-sm border border-slate-100 p-5">
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -319,6 +327,7 @@ function NewRecordForm() {
                 ))}
               </div>
             </div>
+            )}
 
             {/* Attachments */}
             <div className="rounded-2xl bg-white shadow-sm border border-slate-100 p-5">
@@ -337,14 +346,16 @@ function NewRecordForm() {
         {/* Bottom Action Bar */}
         <div className="sticky bottom-0 flex items-center justify-between rounded-2xl bg-white p-4 shadow-lg border border-slate-100">
           <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={saveAndPrint}
-              disabled={saving}
-              className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-700 disabled:opacity-50"
-            >
-              <Printer className="h-4 w-4" /> Imprimir Receta
-            </button>
+            {showRecetas && (
+              <button
+                type="button"
+                onClick={saveAndPrint}
+                disabled={saving}
+                className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-700 disabled:opacity-50"
+              >
+                <Printer className="h-4 w-4" /> Imprimir Receta
+              </button>
+            )}
             <button type="button" className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-700">
               <Send className="h-4 w-4" /> Enviar a Correo
             </button>

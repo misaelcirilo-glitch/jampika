@@ -16,6 +16,8 @@ interface AuthClinic {
   slug: string
   country: string
   plan: string
+  professionType?: string
+  enabledModules?: string[]
 }
 
 interface AuthState {

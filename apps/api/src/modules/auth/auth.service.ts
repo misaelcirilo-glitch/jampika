@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto'
 import { prisma } from '../../config/database.js'
 import { env } from '../../config/env.js'
 import type { AuthPayload } from '../../middleware/auth.js'
+import { modulesForProfession } from './professions.js'
 
 export interface LoginInput {
   email: string
@@ -15,10 +16,22 @@ export interface RegisterClinicInput {
   clinicName: string
   slug: string
   country: string
+  professionType?: string
   adminFirstName: string
   adminLastName: string
   adminEmail: string
   adminPassword: string
+}
+
+// Lee professionType + enabledModules de clinic.settings; si falta (clínicas
+// existentes), asume 'medico' con todos los módulos → sin regresión.
+function readClinicModules(settings: unknown): { professionType: string; enabledModules: string[] } {
+  const s = (settings ?? {}) as Record<string, unknown>
+  const professionType = typeof s.professionType === 'string' ? s.professionType : 'medico'
+  const enabledModules = Array.isArray(s.enabledModules)
+    ? (s.enabledModules as unknown[]).filter((m): m is string => typeof m === 'string')
+    : modulesForProfession(professionType)
+  return { professionType, enabledModules }
 }
 
 function signAccess(payload: AuthPayload): string {
@@ -81,6 +94,7 @@ export async function login(input: LoginInput) {
       slug: user.clinic.slug,
       country: user.clinic.country,
       plan: user.clinic.plan,
+      ...readClinicModules(user.clinic.settings),
     },
   }
 }
@@ -114,12 +128,16 @@ export async function registerClinic(input: RegisterClinicInput) {
   const passwordHash = await bcrypt.hash(input.adminPassword, 10)
   const ownerId = randomUUID()
 
+  const professionType = input.professionType ?? 'medico'
+  const enabledModules = modulesForProfession(professionType)
+
   const clinic = await prisma.clinic.create({
     data: {
       name: input.clinicName,
       slug: input.slug,
       ownerId,
       country: input.country,
+      settings: { professionType, enabledModules },
       users: {
         create: {
           id: ownerId,

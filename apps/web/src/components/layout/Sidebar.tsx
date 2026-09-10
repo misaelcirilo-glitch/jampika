@@ -15,19 +15,23 @@ import {
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import { cn } from '@/lib/utils'
-
-const MAIN_NAV = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/patients', label: 'Pacientes', icon: Users },
-  { href: '/appointments', label: 'Citas', icon: Calendar },
-  { href: '/records', label: 'Historias Médicas', icon: FileText },
-  { href: '/billing', label: 'Facturación', icon: Receipt },
-  { href: '/inventory', label: 'Inventario', icon: Package },
-]
+import { getProfession, hasModule } from '@/lib/professions'
 
 export function Sidebar() {
   const pathname = usePathname()
   const { user, clinic, logout } = useAuthStore()
+
+  const prof = getProfession(clinic?.professionType)
+  // Nav con módulos opcionales gateados por la clínica (inventario) y
+  // terminología por profesión (Pacientes → Consultantes/Clientes; Historias → Notas).
+  const MAIN_NAV = [
+    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/patients', label: prof.patients, icon: Users },
+    { href: '/appointments', label: 'Citas', icon: Calendar },
+    { href: '/records', label: prof.noteStyle === 'soap' ? 'Historias' : 'Notas', icon: FileText },
+    { href: '/billing', label: 'Facturación', icon: Receipt },
+    ...(hasModule(clinic, 'inventario') ? [{ href: '/inventory', label: 'Inventario', icon: Package }] : []),
+  ]
 
   return (
     <aside className="flex h-screen w-60 flex-col bg-white border-r border-slate-100">
@@ -44,7 +48,7 @@ export function Sidebar() {
             </span>
           </div>
           <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-            Gestión Clínica
+            {prof.label}
           </p>
         </div>
       </div>
