@@ -7,11 +7,11 @@
 export type ProfessionType = 'medico' | 'psicologo' | 'terapeuta' | 'coach' | 'homeopata'
 
 export const PROFESSION_MODULES: Record<ProfessionType, string[]> = {
-  medico: ['inventario', 'recetas', 'cie10'],
-  psicologo: [],
-  terapeuta: [],
-  coach: [],
-  homeopata: ['recetas'],
+  medico: ['inventario', 'recetas', 'cie10', 'cuestionarios'],
+  psicologo: ['cuestionarios'],
+  terapeuta: ['cuestionarios'],
+  coach: ['cuestionarios'],
+  homeopata: ['recetas', 'cuestionarios'],
 }
 
 export const PROFESSION_TYPES = Object.keys(PROFESSION_MODULES) as ProfessionType[]

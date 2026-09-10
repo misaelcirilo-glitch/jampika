@@ -21,6 +21,9 @@ import type { MedicalRecord, Patient } from '@jampika/shared'
 import { getPatient } from '@/features/patients/patients.service'
 import { listRecordsByPatient } from '@/features/records/records.service'
 import FilesTab from '@/features/files/FilesTab'
+import QuestionnairesTab from '@/features/questionnaires/QuestionnairesTab'
+import { useAuthStore } from '@/stores/authStore'
+import { hasModule } from '@/lib/professions'
 import { formatDate, formatDateTime } from '@/lib/utils'
 
 const ALLERGY_COLORS = [
@@ -30,10 +33,12 @@ const ALLERGY_COLORS = [
   'bg-cyan-100 text-cyan-700 border-cyan-200',
 ]
 
-type Tab = 'resumen' | 'historia' | 'citas' | 'facturacion' | 'archivos'
+type Tab = 'resumen' | 'historia' | 'citas' | 'facturacion' | 'archivos' | 'cuestionarios'
 
 export default function PatientDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
+  const clinic = useAuthStore((s) => s.clinic)
+  const hasCuestionarios = hasModule(clinic, 'cuestionarios')
   const [patient, setPatient] = useState<Patient | null>(null)
   const [records, setRecords] = useState<MedicalRecord[]>([])
   const [expanded, setExpanded] = useState<string | null>(null)
@@ -62,6 +67,7 @@ export default function PatientDetailPage({ params }: { params: Promise<{ id: st
     { key: 'citas', label: 'Citas', count: records.length },
     { key: 'facturacion', label: 'Facturación' },
     { key: 'archivos', label: 'Archivos' },
+    ...(hasCuestionarios ? [{ key: 'cuestionarios' as Tab, label: 'Cuestionarios' }] : []),
   ]
 
   return (
@@ -375,6 +381,7 @@ export default function PatientDetailPage({ params }: { params: Promise<{ id: st
       )}
 
       {tab === 'archivos' && <FilesTab patientId={id} />}
+      {tab === 'cuestionarios' && <QuestionnairesTab patientId={id} />}
     </div>
   )
 }

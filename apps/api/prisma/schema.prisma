@@ -466,3 +466,28 @@ model WhatsappMessage {
   @@index([conversationId, createdAt])
   @@map("whatsapp_messages")
 }
+
+// ============================================================
+// CUESTIONARIOS / TAREAS que el profesional envía al paciente (PRP-017).
+// Escalas (PHQ-9, GAD-7) + tareas libres. Scalar-only (FKs en SQL).
+// ============================================================
+model QuestionnaireAssignment {
+  id             String    @id @default(uuid()) @db.Uuid
+  clinicId       String    @map("clinic_id") @db.Uuid
+  patientId      String    @map("patient_id") @db.Uuid
+  assignedBy     String?   @map("assigned_by") @db.Uuid
+  title          String
+  type           String    @default("scale") // scale | task | custom
+  templateKey    String?   @map("template_key")
+  questions      Json      @default("[]")
+  answers        Json?
+  score          Int?
+  interpretation String?
+  status         String    @default("pending") // pending | completed
+  token          String
+  createdAt      DateTime  @default(now()) @map("created_at")
+  completedAt    DateTime? @map("completed_at")
+
+  @@index([clinicId, patientId, createdAt])
+  @@map("questionnaire_assignments")
+}

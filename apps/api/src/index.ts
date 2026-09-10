@@ -22,6 +22,8 @@ import whatsappChatRoutes from './modules/whatsapp/chat.routes.js'
 import bookingRoutes from './modules/booking/booking.routes.js'
 import videoRoutes from './modules/telemedicine/video.routes.js'
 import publicVideoRoutes from './modules/telemedicine/public.routes.js'
+import questionnairesRoutes from './modules/questionnaires/questionnaires.routes.js'
+import publicQuestionnaireRoutes from './modules/questionnaires/public.routes.js'
 
 const app = express()
 
@@ -66,6 +68,8 @@ app.use('/api/v1/whatsapp', whatsappWebhookRoutes) // webhook público (verify +
 app.use('/api/v1/whatsapp/chat', whatsappChatRoutes) // inbox (auth + módulo chat)
 app.use('/api/v1/public/booking', bookingRoutes) // reserva online pública (sin auth)
 app.use('/api/v1/public/video', publicVideoRoutes) // videoconsulta pública (token HMAC)
+app.use('/api/v1/questionnaires', questionnairesRoutes) // cuestionarios/tareas (auth + módulo)
+app.use('/api/v1/public/questionnaire', publicQuestionnaireRoutes) // responder (público, token)
 
 app.use(errorHandler)
 

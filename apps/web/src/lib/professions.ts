@@ -18,23 +18,23 @@ export interface ProfessionConfig {
 
 export const PROFESSIONS: Record<ProfessionType, ProfessionConfig> = {
   medico: {
-    key: 'medico', label: 'Médico / Clínica', modules: ['inventario', 'recetas', 'cie10'],
+    key: 'medico', label: 'Médico / Clínica', modules: ['inventario', 'recetas', 'cie10', 'cuestionarios'],
     patient: 'Paciente', patients: 'Pacientes', session: 'Consulta', noteStyle: 'soap',
   },
   psicologo: {
-    key: 'psicologo', label: 'Psicólogo/a', modules: [],
+    key: 'psicologo', label: 'Psicólogo/a', modules: ['cuestionarios'],
     patient: 'Consultante', patients: 'Consultantes', session: 'Sesión', noteStyle: 'libre',
   },
   terapeuta: {
-    key: 'terapeuta', label: 'Terapeuta', modules: [],
+    key: 'terapeuta', label: 'Terapeuta', modules: ['cuestionarios'],
     patient: 'Consultante', patients: 'Consultantes', session: 'Sesión', noteStyle: 'libre',
   },
   coach: {
-    key: 'coach', label: 'Coach', modules: [],
+    key: 'coach', label: 'Coach', modules: ['cuestionarios'],
     patient: 'Cliente', patients: 'Clientes', session: 'Sesión', noteStyle: 'objetivos',
   },
   homeopata: {
-    key: 'homeopata', label: 'Homeópata', modules: ['recetas'],
+    key: 'homeopata', label: 'Homeópata', modules: ['recetas', 'cuestionarios'],
     patient: 'Paciente', patients: 'Pacientes', session: 'Consulta', noteStyle: 'soap',
   },
 }
