@@ -1,13 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Building2, Clock, UserPlus, Users } from 'lucide-react'
+import { Building2, Clock, MessageCircle, UserPlus, Users } from 'lucide-react'
 import { ClinicTab } from './_tabs/ClinicTab'
 import { UsersTab } from './_tabs/UsersTab'
 import { ScheduleTab } from './_tabs/ScheduleTab'
+import { RemindersTab } from './_tabs/RemindersTab'
 import { api } from '@/lib/api'
 
-type Tab = 'clinic' | 'users' | 'schedule'
+type Tab = 'clinic' | 'users' | 'schedule' | 'reminders'
 
 export default function SettingsPage() {
   const [tab, setTab] = useState<Tab>('users')
@@ -31,6 +32,7 @@ export default function SettingsPage() {
     { id: 'clinic', label: 'Clínica', icon: Building2 },
     { id: 'users', label: 'Profesionales', icon: Users },
     { id: 'schedule', label: 'Horarios', icon: Clock },
+    { id: 'reminders', label: 'Recordatorios', icon: MessageCircle },
   ]
 
   return (
@@ -73,6 +75,7 @@ export default function SettingsPage() {
       {tab === 'clinic' && clinic && <ClinicTab clinic={clinic} onSaved={refresh} />}
       {tab === 'users' && <UsersTab users={users} onChanged={refresh} />}
       {tab === 'schedule' && <ScheduleTab users={users} onChanged={refresh} />}
+      {tab === 'reminders' && clinic && <RemindersTab clinic={clinic} onSaved={refresh} />}
     </div>
   )
 }

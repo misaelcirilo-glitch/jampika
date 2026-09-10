@@ -16,6 +16,7 @@ import inventoryRoutes from './modules/inventory/inventory.routes.js'
 import dashboardRoutes from './modules/dashboard/dashboard.routes.js'
 import settingsRoutes from './modules/settings/settings.routes.js'
 import syncRoutes from './modules/sync/sync.routes.js'
+import remindersRoutes from './modules/reminders/reminders.routes.js'
 
 const app = express()
 
@@ -54,6 +55,7 @@ app.use('/api/v1/inventory', inventoryRoutes)
 app.use('/api/v1/dashboard', dashboardRoutes)
 app.use('/api/v1/settings', settingsRoutes)
 app.use('/api/v1/sync', syncRoutes)
+app.use('/api/v1/reminders', remindersRoutes)
 
 app.use(errorHandler)
 
