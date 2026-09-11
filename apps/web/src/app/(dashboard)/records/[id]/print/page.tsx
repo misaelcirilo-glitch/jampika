@@ -7,6 +7,7 @@ import { api } from '@/lib/api'
 import { db } from '@/lib/db/schema'
 import { useAuthStore } from '@/stores/authStore'
 import { formatDate } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 
 export default function PrintRecipePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)

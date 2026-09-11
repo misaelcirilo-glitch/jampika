@@ -3,6 +3,11 @@
 import { useState } from 'react'
 import { Bell, MessageCircle } from 'lucide-react'
 import { api } from '@/lib/api'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 
 interface ReminderCfg {
   enabled?: boolean
@@ -45,54 +50,45 @@ export function RemindersTab({ clinic, onSaved }: { clinic: any; onSaved: () => 
   }
 
   return (
-    <div className="max-w-xl space-y-5 rounded-2xl bg-white p-6 shadow-sm border border-slate-100">
+    <Card className="max-w-xl space-y-5 p-6">
       <div className="flex items-center gap-2">
-        <MessageCircle className="h-5 w-5 text-emerald-600" />
-        <h2 className="text-sm font-bold text-slate-700">Recordatorios por WhatsApp</h2>
+        <MessageCircle className="h-5 w-5 text-success" />
+        <h2 className="text-sm font-bold text-foreground">Recordatorios por WhatsApp</h2>
       </div>
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-muted-foreground">
         Enviamos un recordatorio automático al paciente antes de su cita para reducir las
         inasistencias. Requiere que el paciente tenga teléfono registrado.
       </p>
 
-      <label className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
-        <span className="flex items-center gap-2 text-sm font-medium text-slate-700">
-          <Bell className="h-4 w-4 text-slate-400" /> Activar recordatorios
+      <label className="flex items-center justify-between rounded-xl border border-border bg-muted px-4 py-3">
+        <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+          <Bell className="h-4 w-4 text-muted-foreground" /> Activar recordatorios
         </span>
-        <input
-          type="checkbox"
-          checked={enabled}
-          onChange={(e) => setEnabled(e.target.checked)}
-          className="h-5 w-5 accent-emerald-600"
-        />
+        <Switch checked={enabled} onCheckedChange={setEnabled} />
       </label>
 
-      <label className="block">
-        <span className="text-xs font-medium text-slate-600">Enviar cuántas horas antes</span>
+      <div className="block">
+        <Label className="mb-1 block text-xs">Enviar cuántas horas antes</Label>
         <div className="mt-1 flex items-center gap-2">
-          <input
+          <Input
             type="number"
             min={1}
             max={72}
             value={hoursBefore}
             disabled={!enabled}
             onChange={(e) => setHoursBefore(Math.max(1, Math.min(72, Number(e.target.value) || 24)))}
-            className="w-24 rounded-lg border border-slate-300 px-3 py-2 text-sm disabled:opacity-50"
+            className="w-24"
           />
-          <span className="text-sm text-slate-400">horas antes de la cita</span>
+          <span className="text-sm text-muted-foreground">horas antes de la cita</span>
         </div>
-      </label>
+      </div>
 
       <div className="flex items-center gap-3">
-        <button
-          onClick={save}
-          disabled={saving}
-          className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
-        >
+        <Button onClick={save} disabled={saving}>
           {saving ? 'Guardando…' : 'Guardar'}
-        </button>
-        {msg && <span className="text-sm text-slate-500">{msg}</span>}
+        </Button>
+        {msg && <span className="text-sm text-muted-foreground">{msg}</span>}
       </div>
-    </div>
+    </Card>
   )
 }

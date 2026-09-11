@@ -10,6 +10,7 @@ import { RemindersTab } from './_tabs/RemindersTab'
 import { BookingTab } from './_tabs/BookingTab'
 import { SubscriptionTab } from './_tabs/SubscriptionTab'
 import { api } from '@/lib/api'
+import { Button } from '@/components/ui/button'
 
 type Tab = 'clinic' | 'users' | 'schedule' | 'reminders' | 'reservas' | 'suscripcion'
 
@@ -56,25 +57,25 @@ function SettingsContent() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Administración del Centro</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-foreground">Administración del Centro</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Gestiona la información de la clínica, el equipo médico y los horarios de atención.
           </p>
         </div>
         {tab === 'users' && (
-          <button className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors">
+          <Button>
             <UserPlus className="h-4 w-4" /> Invitar Profesional
-          </button>
+          </Button>
         )}
       </div>
 
       {/* Banner de éxito tras el checkout */}
       {checkoutBanner && (
-        <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+        <div className="flex items-center justify-between rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm font-medium text-success">
           <span>¡Suscripción activada! Gracias.</span>
           <button
             onClick={() => setCheckoutBanner(false)}
-            className="text-emerald-600 hover:text-emerald-800"
+            className="text-success hover:opacity-80"
             aria-label="Cerrar"
           >
             ✕
@@ -83,7 +84,7 @@ function SettingsContent() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-slate-200">
+      <div className="flex gap-1 border-b border-border">
         {tabs.map((t) => {
           const Icon = t.icon
           return (
@@ -92,8 +93,8 @@ function SettingsContent() {
               onClick={() => setTab(t.id)}
               className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors ${
                 tab === t.id
-                  ? 'border-blue-600 text-blue-700'
-                  : 'border-transparent text-slate-400 hover:text-slate-600'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
               <Icon className="h-4 w-4" /> {t.label}

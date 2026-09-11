@@ -1,16 +1,18 @@
 'use client'
 
+import { Card } from '@/components/ui/card'
+
 export default function RecordsPage() {
   return (
     <div>
-      <h1 className="mb-4 text-2xl font-semibold text-slate-800">Historias clínicas</h1>
-      <p className="rounded-xl bg-white p-8 text-center text-sm text-slate-400 shadow-sm">
+      <h1 className="mb-4 text-2xl font-semibold text-foreground">Historias clínicas</h1>
+      <Card className="p-8 text-center text-sm text-muted-foreground">
         Busca un paciente en{' '}
-        <a href="/patients" className="text-primary-600">
+        <a href="/patients" className="text-primary">
           Pacientes
         </a>{' '}
         para ver y crear consultas.
-      </p>
+      </Card>
     </div>
   )
 }

@@ -18,6 +18,10 @@ import { listPatients } from '@/features/patients/patients.service'
 import { api } from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
 import { hasModule } from '@/lib/professions'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 interface Doctor {
   id: string
@@ -30,12 +34,12 @@ interface Doctor {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  scheduled: 'bg-white border-slate-200',
-  confirmed: 'bg-orange-50 border-orange-200',
-  in_progress: 'bg-blue-50 border-blue-200',
-  completed: 'bg-green-50 border-green-200',
-  cancelled: 'bg-red-50 border-red-200 opacity-60',
-  no_show: 'bg-rose-50 border-rose-200 opacity-60',
+  scheduled: 'bg-card border-border',
+  confirmed: 'bg-warning/10 border-warning/30',
+  in_progress: 'bg-primary/5 border-primary/30',
+  completed: 'bg-success/10 border-success/30',
+  cancelled: 'bg-destructive/10 border-destructive/30 opacity-60',
+  no_show: 'bg-destructive/10 border-destructive/30 opacity-60',
 }
 
 function toDateStr(d: Date): string {
@@ -175,31 +179,31 @@ export default function AppointmentsPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-7rem)] flex-col overflow-hidden rounded-2xl bg-white shadow-sm border border-slate-100">
+    <Card className="flex h-[calc(100vh-7rem)] flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4 border-b border-slate-100 p-4">
+      <div className="flex items-center justify-between gap-4 border-b border-border p-4">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1 rounded-lg border border-slate-100 bg-slate-50 p-1">
+          <div className="flex items-center gap-1 rounded-lg border border-border bg-muted p-1">
             <button
               onClick={() => nav(-1)}
-              className="rounded-md p-1.5 text-slate-600 hover:bg-white"
+              className="rounded-md p-1.5 text-muted-foreground hover:bg-card"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
             <button
               onClick={() => setCurrentDate(new Date())}
-              className="px-3 py-1 text-xs font-bold uppercase text-slate-700"
+              className="px-3 py-1 text-xs font-bold uppercase text-foreground"
             >
               Hoy
             </button>
             <button
               onClick={() => nav(1)}
-              className="rounded-md p-1.5 text-slate-600 hover:bg-white"
+              className="rounded-md p-1.5 text-muted-foreground hover:bg-card"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
           </div>
-          <span className="text-xl font-bold capitalize text-slate-800">
+          <span className="text-xl font-bold capitalize text-foreground">
             {view === 'day' &&
               currentDate.toLocaleString('es', {
                 weekday: 'long',
@@ -215,30 +219,30 @@ export default function AppointmentsPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 rounded-lg border border-slate-300 bg-slate-50 p-1">
+          <div className="flex items-center gap-1 rounded-lg border border-border bg-muted p-1">
             <button
               onClick={() => setView('day')}
-              className={`rounded-md px-3 py-1 text-xs font-bold uppercase ${view === 'day' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500'}`}
+              className={`rounded-md px-3 py-1 text-xs font-bold uppercase ${view === 'day' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground'}`}
             >
               Día
             </button>
             <button
               onClick={() => setView('week')}
-              className={`rounded-md px-3 py-1 text-xs font-bold uppercase ${view === 'week' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500'}`}
+              className={`rounded-md px-3 py-1 text-xs font-bold uppercase ${view === 'week' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground'}`}
             >
               Semana
             </button>
             <button
               onClick={() => setView('month')}
-              className={`rounded-md px-3 py-1 text-xs font-bold uppercase ${view === 'month' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500'}`}
+              className={`rounded-md px-3 py-1 text-xs font-bold uppercase ${view === 'month' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground'}`}
             >
               Mes
             </button>
           </div>
-          <div className="flex items-center gap-2 rounded-lg border bg-slate-50 px-3 py-2">
-            <Filter className="h-4 w-4 text-slate-400" />
+          <div className="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
             <select
-              className="bg-transparent text-xs font-bold outline-none"
+              className="bg-transparent text-xs font-bold text-foreground outline-none"
               value={selectedDoctor}
               onChange={(e) => setSelectedDoctor(e.target.value)}
             >
@@ -250,14 +254,13 @@ export default function AppointmentsPage() {
               ))}
             </select>
           </div>
-          <button
+          <Button
             onClick={() =>
               openNewAppt(toDateStr(currentDate), '09:00', visibleDoctors[0]?.id ?? doctors[0]?.id ?? '')
             }
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-blue-700"
           >
             <Plus className="h-4 w-4" /> Nueva cita
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -266,19 +269,19 @@ export default function AppointmentsPage() {
         {visibleDoctors.length === 0 ? (
           <div className="flex h-full items-center justify-center p-10 text-center">
             <div>
-              <p className="mb-2 text-slate-500">No hay profesionales configurados.</p>
-              <a href="/settings" className="text-sm font-medium text-blue-600">
+              <p className="mb-2 text-muted-foreground">No hay profesionales configurados.</p>
+              <a href="/settings" className="text-sm font-medium text-primary">
                 Configurar profesionales →
               </a>
             </div>
           </div>
         ) : view === 'month' ? (
           <div className="flex h-full flex-col">
-            <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50">
+            <div className="grid grid-cols-7 border-b border-border bg-muted">
               {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((d) => (
                 <div
                   key={d}
-                  className="border-r border-slate-100 px-2 py-2 text-center text-xs font-bold uppercase text-slate-500 last:border-r-0"
+                  className="border-r border-border px-2 py-2 text-center text-xs font-bold uppercase text-muted-foreground last:border-r-0"
                 >
                   {d}
                 </div>
@@ -303,12 +306,12 @@ export default function AppointmentsPage() {
                       setCurrentDate(day)
                       setView('day')
                     }}
-                    className={`flex cursor-pointer flex-col gap-1 border-b border-r border-slate-100 p-1.5 text-xs transition hover:bg-blue-50/50 ${
-                      inMonth ? 'bg-white' : 'bg-slate-50 text-slate-400'
-                    } ${isToday ? 'bg-blue-50' : ''}`}
+                    className={`flex cursor-pointer flex-col gap-1 border-b border-r border-border p-1.5 text-xs transition hover:bg-secondary/50 ${
+                      inMonth ? 'bg-card' : 'bg-muted text-muted-foreground'
+                    } ${isToday ? 'bg-secondary' : ''}`}
                   >
                     <div
-                      className={`text-right text-sm font-bold ${isToday ? 'text-blue-700' : inMonth ? 'text-slate-700' : 'text-slate-400'}`}
+                      className={`text-right text-sm font-bold ${isToday ? 'text-primary' : inMonth ? 'text-foreground' : 'text-muted-foreground'}`}
                     >
                       {day.getDate()}
                     </div>
@@ -332,7 +335,7 @@ export default function AppointmentsPage() {
                         )
                       })}
                       {dayAppts.length > 3 && (
-                        <div className="text-[10px] font-bold text-slate-500">
+                        <div className="text-[10px] font-bold text-muted-foreground">
                           +{dayAppts.length - 3} más
                         </div>
                       )}
@@ -344,22 +347,22 @@ export default function AppointmentsPage() {
           </div>
         ) : view === 'day' ? (
           <div className="min-w-[800px]">
-            <div className="sticky top-0 z-10 flex border-b border-slate-200 bg-slate-50 shadow-sm">
-              <div className="w-16 flex-shrink-0 border-r border-slate-200 bg-white" />
+            <div className="sticky top-0 z-10 flex border-b border-border bg-muted shadow-sm">
+              <div className="w-16 flex-shrink-0 border-r border-border bg-card" />
               {visibleDoctors.map((d) => (
                 <div
                   key={d.id}
-                  className="flex-1 border-r border-slate-200 px-2 py-3 text-center last:border-r-0"
+                  className="flex-1 border-r border-border px-2 py-3 text-center last:border-r-0"
                   style={{ minWidth: 200 }}
                 >
-                  <div className="flex items-center justify-center gap-2 text-sm font-bold text-slate-800">
+                  <div className="flex items-center justify-center gap-2 text-sm font-bold text-foreground">
                     <span
                       className="inline-block h-2 w-2 rounded-full"
                       style={{ backgroundColor: d.color ?? '#94a3b8' }}
                     />
                     {d.firstName} {d.lastName}
                   </div>
-                  {d.specialty && <div className="text-xs text-slate-500">{d.specialty}</div>}
+                  {d.specialty && <div className="text-xs text-muted-foreground">{d.specialty}</div>}
                 </div>
               ))}
             </div>
@@ -367,8 +370,8 @@ export default function AppointmentsPage() {
             {timeSlots.map((time) => {
               const slotHour = parseInt(time.split(':')[0]!, 10)
               return (
-                <div key={time} className="flex min-h-[120px] border-b border-slate-100">
-                  <div className="sticky left-0 z-10 flex w-16 flex-shrink-0 items-start justify-center border-r border-slate-200 bg-slate-50 pt-2 text-xs font-bold text-slate-500">
+                <div key={time} className="flex min-h-[120px] border-b border-border">
+                  <div className="sticky left-0 z-10 flex w-16 flex-shrink-0 items-start justify-center border-r border-border bg-muted pt-2 text-xs font-bold text-muted-foreground">
                     {time}
                   </div>
                   {visibleDoctors.map((d) => {
@@ -387,14 +390,14 @@ export default function AppointmentsPage() {
                         onClick={() =>
                           isEmpty && openNewAppt(toDateStr(currentDate), time, d.id)
                         }
-                        className={`group relative flex-1 border-r border-slate-100 p-1 last:border-r-0 ${
-                          isEmpty ? 'cursor-pointer hover:bg-blue-50/50' : 'bg-white'
+                        className={`group relative flex-1 border-r border-border p-1 last:border-r-0 ${
+                          isEmpty ? 'cursor-pointer hover:bg-secondary/50' : 'bg-card'
                         }`}
                         style={{ minWidth: 200 }}
                       >
                         {isEmpty && (
                           <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                            <div className="rounded-full border border-blue-200 bg-blue-100 px-3 py-1 text-[10px] font-bold text-blue-600 shadow-sm">
+                            <div className="rounded-full border border-primary/30 bg-secondary px-3 py-1 text-[10px] font-bold text-primary shadow-sm">
                               + Nueva cita
                             </div>
                           </div>
@@ -416,7 +419,7 @@ export default function AppointmentsPage() {
                                 }}
                               >
                                 <div className="flex items-start justify-between">
-                                  <div className="min-w-0 flex-1 text-sm font-bold text-blue-700">
+                                  <div className="min-w-0 flex-1 text-sm font-bold text-primary">
                                     {patient ? (
                                       <Link
                                         href={`/patients/${patient.id}`}
@@ -429,7 +432,7 @@ export default function AppointmentsPage() {
                                       'Paciente'
                                     )}
                                     {apt.reason && (
-                                      <span className="font-normal text-slate-500"> ({apt.reason})</span>
+                                      <span className="font-normal text-muted-foreground"> ({apt.reason})</span>
                                     )}
                                   </div>
                                   <div className="ml-2 flex flex-shrink-0 gap-1">
@@ -441,8 +444,8 @@ export default function AppointmentsPage() {
                                       title="Sala de espera"
                                       className={`rounded-full p-1 ${
                                         apt.status === 'confirmed'
-                                          ? 'bg-orange-500 text-white'
-                                          : 'bg-slate-200 text-slate-400 hover:bg-orange-200'
+                                          ? 'bg-warning text-warning-foreground'
+                                          : 'bg-muted text-muted-foreground hover:bg-warning/20'
                                       }`}
                                     >
                                       <Coffee className="h-3 w-3" />
@@ -455,8 +458,8 @@ export default function AppointmentsPage() {
                                       title="En consulta"
                                       className={`rounded-full p-1 ${
                                         apt.status === 'in_progress'
-                                          ? 'bg-blue-500 text-white'
-                                          : 'bg-slate-200 text-slate-400 hover:bg-blue-200'
+                                          ? 'bg-primary text-primary-foreground'
+                                          : 'bg-muted text-muted-foreground hover:bg-primary/20'
                                       }`}
                                     >
                                       <Stethoscope className="h-3 w-3" />
@@ -469,8 +472,8 @@ export default function AppointmentsPage() {
                                       title="Completada"
                                       className={`rounded-full p-1 ${
                                         apt.status === 'completed'
-                                          ? 'bg-green-500 text-white'
-                                          : 'bg-slate-200 text-slate-400 hover:bg-green-200'
+                                          ? 'bg-success text-success-foreground'
+                                          : 'bg-muted text-muted-foreground hover:bg-success/20'
                                       }`}
                                     >
                                       <CheckCircle className="h-3 w-3" />
@@ -490,20 +493,20 @@ export default function AppointmentsPage() {
           </div>
         ) : (
           <div className="min-w-[1000px]">
-            <div className="sticky top-0 z-10 flex border-b border-slate-200 bg-slate-50 shadow-sm">
-              <div className="w-16 flex-shrink-0 border-r border-slate-200 bg-white" />
+            <div className="sticky top-0 z-10 flex border-b border-border bg-muted shadow-sm">
+              <div className="w-16 flex-shrink-0 border-r border-border bg-card" />
               {weekDays.map((d) => {
                 const isToday = sameDate(d, new Date())
                 return (
                   <div
                     key={d.toISOString()}
-                    className={`flex-1 border-r border-slate-200 px-2 py-3 text-center last:border-r-0 ${isToday ? 'bg-blue-50' : ''}`}
+                    className={`flex-1 border-r border-border px-2 py-3 text-center last:border-r-0 ${isToday ? 'bg-secondary' : ''}`}
                     style={{ minWidth: 140 }}
                   >
-                    <div className="text-xs font-bold uppercase text-slate-500">
+                    <div className="text-xs font-bold uppercase text-muted-foreground">
                       {d.toLocaleString('es', { weekday: 'short' })}
                     </div>
-                    <div className={`text-lg font-bold ${isToday ? 'text-blue-700' : 'text-slate-800'}`}>
+                    <div className={`text-lg font-bold ${isToday ? 'text-primary' : 'text-foreground'}`}>
                       {d.getDate()}
                     </div>
                   </div>
@@ -514,8 +517,8 @@ export default function AppointmentsPage() {
             {timeSlots.map((time) => {
               const slotHour = parseInt(time.split(':')[0]!, 10)
               return (
-                <div key={time} className="flex min-h-[100px] border-b border-slate-100">
-                  <div className="sticky left-0 z-10 flex w-16 flex-shrink-0 items-start justify-center border-r border-slate-200 bg-slate-50 pt-2 text-xs font-bold text-slate-500">
+                <div key={time} className="flex min-h-[100px] border-b border-border">
+                  <div className="sticky left-0 z-10 flex w-16 flex-shrink-0 items-start justify-center border-r border-border bg-muted pt-2 text-xs font-bold text-muted-foreground">
                     {time}
                   </div>
                   {weekDays.map((day) => {
@@ -538,14 +541,14 @@ export default function AppointmentsPage() {
                             selectedDoctor !== 'all' ? selectedDoctor : doctors[0]?.id ?? '',
                           )
                         }
-                        className={`group relative flex-1 border-r border-slate-100 p-1 last:border-r-0 ${
-                          isEmpty ? 'cursor-pointer hover:bg-blue-50/50' : 'bg-white'
+                        className={`group relative flex-1 border-r border-border p-1 last:border-r-0 ${
+                          isEmpty ? 'cursor-pointer hover:bg-secondary/50' : 'bg-card'
                         }`}
                         style={{ minWidth: 140 }}
                       >
                         {isEmpty && (
                           <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                            <div className="rounded-full border border-blue-200 bg-blue-100 px-2 py-0.5 text-[9px] font-bold text-blue-600 shadow-sm">
+                            <div className="rounded-full border border-primary/30 bg-secondary px-2 py-0.5 text-[9px] font-bold text-primary shadow-sm">
                               + Cita
                             </div>
                           </div>
@@ -567,10 +570,10 @@ export default function AppointmentsPage() {
                                   minHeight: `${(apt.durationMinutes / 60) * 100 - 8}px`,
                                 }}
                               >
-                                <div className="font-bold text-slate-700">
+                                <div className="font-bold text-foreground">
                                   {new Date(apt.startTime).toTimeString().slice(0, 5)}
                                 </div>
-                                <div className="truncate font-bold text-blue-700">
+                                <div className="truncate font-bold text-primary">
                                   {patient ? (
                                     <Link
                                       href={`/patients/${patient.id}`}
@@ -584,7 +587,7 @@ export default function AppointmentsPage() {
                                   )}
                                 </div>
                                 {apt.reason && (
-                                  <div className="truncate text-[10px] text-slate-500">
+                                  <div className="truncate text-[10px] text-muted-foreground">
                                     {apt.reason}
                                   </div>
                                 )}
@@ -616,7 +619,7 @@ export default function AppointmentsPage() {
           hasVideo={hasModule(clinic, 'telemedicina')}
         />
       )}
-    </div>
+    </Card>
   )
 }
 
@@ -723,17 +726,17 @@ function NewApptModal({
     }
   }
 
-  const label = 'mb-1 block text-[10px] font-black uppercase tracking-widest text-slate-400'
-  const input = 'w-full rounded-lg border border-slate-300 p-2 font-bold'
+  const label = 'mb-1 block text-[10px] font-black uppercase tracking-widest text-muted-foreground'
+  const selectClass = 'w-full rounded-md border border-input bg-card p-2 text-sm font-bold text-foreground shadow-sm'
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b bg-slate-50 px-6 py-4">
-          <h3 className="text-sm font-bold uppercase tracking-tight text-slate-800">
+      <Card className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden shadow-xl">
+        <div className="flex items-center justify-between border-b border-border bg-muted px-6 py-4">
+          <h3 className="text-sm font-bold uppercase tracking-tight text-foreground">
             {editing ? 'Editar cita' : 'Nueva cita'}
           </h3>
-          <button onClick={onClose}>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -741,19 +744,19 @@ function NewApptModal({
         <div className="space-y-4 overflow-y-auto p-6 text-sm">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={label}>Fecha</label>
-              <input
+              <Label className={label}>Fecha</Label>
+              <Input
                 type="date"
-                className={input}
+                className="font-bold"
                 value={form.date}
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
               />
             </div>
             <div>
-              <label className={label}>Hora</label>
-              <input
+              <Label className={label}>Hora</Label>
+              <Input
                 type="time"
-                className={input}
+                className="font-bold"
                 value={form.time}
                 onChange={(e) => setForm({ ...form, time: e.target.value })}
               />
@@ -761,9 +764,9 @@ function NewApptModal({
           </div>
 
           <div>
-            <label className={label}>Paciente</label>
+            <Label className={label}>Paciente</Label>
             <select
-              className={`${input} bg-white`}
+              className={selectClass}
               value={form.patientId}
               onChange={(e) => setForm({ ...form, patientId: e.target.value })}
             >
@@ -778,9 +781,9 @@ function NewApptModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={label}>Profesional</label>
+              <Label className={label}>Profesional</Label>
               <select
-                className={`${input} bg-white`}
+                className={selectClass}
                 value={form.doctorId}
                 onChange={(e) => setForm({ ...form, doctorId: e.target.value })}
               >
@@ -793,9 +796,9 @@ function NewApptModal({
               </select>
             </div>
             <div>
-              <label className={label}>Duración</label>
+              <Label className={label}>Duración</Label>
               <select
-                className={`${input} bg-white`}
+                className={selectClass}
                 value={form.durationMinutes}
                 onChange={(e) => setForm({ ...form, durationMinutes: Number(e.target.value) })}
               >
@@ -808,9 +811,9 @@ function NewApptModal({
           </div>
 
           <div>
-            <label className={label}>Motivo / Tipo</label>
-            <input
-              className={input}
+            <Label className={label}>Motivo / Tipo</Label>
+            <Input
+              className="font-bold"
               placeholder="Ej: Control, primera consulta..."
               value={form.reason}
               onChange={(e) => setForm({ ...form, reason: e.target.value })}
@@ -819,9 +822,9 @@ function NewApptModal({
 
           {editing && (
             <div>
-              <label className={label}>Estado</label>
+              <Label className={label}>Estado</Label>
               <select
-                className={`${input} bg-white`}
+                className={selectClass}
                 value={form.status}
                 onChange={(e) => setForm({ ...form, status: e.target.value as any })}
               >
@@ -836,49 +839,52 @@ function NewApptModal({
           )}
 
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-2 text-xs text-red-700">
+            <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-2 text-xs text-destructive">
               {error}
             </div>
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-3 border-t bg-slate-50 p-4">
+        <div className="flex items-center justify-between gap-3 border-t border-border bg-muted p-4">
           <div className="flex gap-2">
             {editing && (
-              <button
+              <Button
+                variant="outline"
                 onClick={cancelAppt}
                 disabled={deleting}
-                className="rounded-lg border border-red-300 px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-red-600 hover:bg-red-50 disabled:opacity-50"
+                className="border-destructive/40 px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-destructive hover:bg-destructive/10"
               >
                 {deleting ? 'Cancelando…' : 'Cancelar cita'}
-              </button>
+              </Button>
             )}
             {editing && hasVideo && (
-              <button
+              <Button
+                variant="outline"
                 onClick={startVideo}
-                className="rounded-lg border border-emerald-300 px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-emerald-700 hover:bg-emerald-50"
+                className="border-success/40 px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-success hover:bg-success/10"
               >
                 📹 Videollamada
-              </button>
+              </Button>
             )}
           </div>
           <div className="flex gap-3">
-            <button
+            <Button
+              variant="outline"
               onClick={onClose}
-              className="rounded-lg border px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-slate-600 hover:bg-slate-100"
+              className="px-5 py-2.5 text-xs font-bold uppercase tracking-widest"
             >
               Cerrar
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={save}
               disabled={saving || !form.patientId || !form.doctorId}
-              className="rounded-lg bg-blue-600 px-8 py-2.5 text-xs font-black uppercase tracking-widest text-white shadow-md hover:bg-blue-700 disabled:opacity-50"
+              className="px-8 py-2.5 text-xs font-black uppercase tracking-widest shadow-md"
             >
               {saving ? 'Guardando…' : 'Guardar'}
-            </button>
+            </Button>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   )
 }

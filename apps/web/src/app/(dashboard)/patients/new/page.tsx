@@ -38,7 +38,7 @@ export default function NewPatientPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="mb-6 text-2xl font-semibold text-slate-800">Nuevo paciente</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Nuevo paciente</h1>
       <PatientForm
         initial={emptyPatientForm()}
         onSubmit={handleSubmit}
