@@ -103,7 +103,7 @@ export default function PatientsPage() {
         <Button asChild>
           <Link href="/patients/new">
             <Plus className="h-4 w-4" />
-            New Patient
+            Nuevo Paciente
           </Link>
         </Button>
       </div>

@@ -92,7 +92,7 @@ export default function InventoryPage() {
         </Button>
         <Button asChild>
           <Link href="/inventory/new">
-            <Plus className="h-4 w-4" /> New Item
+            <Plus className="h-4 w-4" /> Nuevo Insumo
           </Link>
         </Button>
       </div>
