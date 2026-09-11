@@ -113,11 +113,11 @@ export default function PatientsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Document</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Last Visit</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Nombre</TableHead>
+              <TableHead>Documento</TableHead>
+              <TableHead>Teléfono</TableHead>
+              <TableHead>Última visita</TableHead>
+              <TableHead>Estado</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

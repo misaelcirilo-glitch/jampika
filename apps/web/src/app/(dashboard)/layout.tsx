@@ -7,21 +7,23 @@ import { SyncBadge } from '@/components/layout/SyncBadge'
 import { useAuthStore } from '@/stores/authStore'
 
 const PAGE_TITLES: Record<string, string> = {
-  '/dashboard': 'Dashboard',
+  '/dashboard': 'Inicio',
   '/patients': 'Pacientes',
   '/appointments': 'Citas',
   '/records': 'Historias Médicas',
   '/billing': 'Facturación',
   '/inventory': 'Inventario',
+  '/chat': 'WhatsApp',
+  '/planes': 'Planes',
   '/settings': 'Configuración',
 }
 
 function getPageTitle(pathname: string | null): string {
-  if (!pathname) return 'Dashboard'
+  if (!pathname) return 'Inicio'
   for (const [path, title] of Object.entries(PAGE_TITLES)) {
     if (pathname.startsWith(path)) return title
   }
-  return 'Dashboard'
+  return 'Inicio'
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

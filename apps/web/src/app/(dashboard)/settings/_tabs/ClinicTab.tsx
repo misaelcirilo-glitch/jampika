@@ -130,7 +130,7 @@ export function ClinicTab({ clinic, onSaved }: { clinic: any; onSaved: () => voi
             />
           </div>
           <div>
-            <Label className="mb-1 block">Email</Label>
+            <Label className="mb-1 block">Correo</Label>
             <Input
               type="email"
               value={form.email}

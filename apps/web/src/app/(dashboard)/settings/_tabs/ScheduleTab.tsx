@@ -87,7 +87,7 @@ export function ScheduleTab({ users, onChanged }: { users: any[]; onChanged: () 
   if (doctors.length === 0) {
     return (
       <Card className="p-8 text-center text-sm text-muted-foreground">
-        Agrega profesionales con rol <strong>doctor</strong> para configurar sus horarios.
+        Agrega profesionales con rol <strong>médico</strong> para configurar sus horarios.
       </Card>
     )
   }

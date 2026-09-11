@@ -24,9 +24,9 @@ import {
 } from '@/components/ui/table'
 
 const ROLE_LABELS: Record<string, string> = {
-  admin: 'Admin',
-  doctor: 'Doctor',
-  receptionist: 'Recepción',
+  admin: 'Administrador',
+  doctor: 'Médico',
+  receptionist: 'Recepcionista',
   nurse: 'Enfermería',
 }
 
@@ -192,7 +192,7 @@ function UserModal({
               />
             </div>
             <div>
-              <Label className="mb-1 block">Email</Label>
+              <Label className="mb-1 block">Correo</Label>
               <Input
                 type="email"
                 required
@@ -217,9 +217,9 @@ function UserModal({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="doctor">Doctor</SelectItem>
-                  <SelectItem value="receptionist">Recepción</SelectItem>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                  <SelectItem value="doctor">Médico</SelectItem>
+                  <SelectItem value="receptionist">Recepcionista</SelectItem>
                   <SelectItem value="nurse">Enfermería</SelectItem>
                 </SelectContent>
               </Select>

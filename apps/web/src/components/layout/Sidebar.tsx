@@ -26,7 +26,7 @@ export function Sidebar() {
 
   const prof = getProfession(clinic?.professionType)
   const MAIN_NAV = [
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/dashboard', label: 'Inicio', icon: LayoutDashboard },
     { href: '/patients', label: prof.patients, icon: Users },
     { href: '/appointments', label: 'Citas', icon: Calendar },
     { href: '/records', label: prof.noteStyle === 'soap' ? 'Historias' : 'Notas', icon: FileText },
