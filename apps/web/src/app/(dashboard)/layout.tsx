@@ -46,27 +46,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const roleName = user?.role === 'admin' ? 'Administrador' : user?.role === 'doctor' ? 'Médico General' : user?.role === 'receptionist' ? 'Recepcionista' : user?.role ?? ''
 
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="flex h-screen bg-background">
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="flex items-center justify-between border-b border-slate-100 bg-white px-6 py-3">
+        <header className="flex items-center justify-between border-b border-border bg-card px-6 py-3">
           <div className="flex items-center gap-3">
-            <h2 className="text-sm font-semibold text-slate-800">{pageTitle}</h2>
-            <span className="text-slate-300">/</span>
-            <span className="text-xs text-slate-400">Jampika / {pageTitle}</span>
+            <h2 className="text-sm font-semibold text-foreground">{pageTitle}</h2>
+            <span className="text-muted-foreground/40">/</span>
+            <span className="text-xs text-muted-foreground">Jampika / {pageTitle}</span>
           </div>
           <div className="flex items-center gap-4">
             <SyncBadge />
-            <div className="h-6 w-px bg-slate-200" />
+            <div className="h-6 w-px bg-border" />
             <div className="flex items-center gap-3">
               <div className="text-right">
-                <p className="text-sm font-medium text-slate-700">
+                <p className="text-sm font-medium text-foreground">
                   {user ? `${user.firstName} ${user.lastName}` : ''}
                 </p>
-                <p className="text-xs text-slate-400">{roleName}</p>
+                <p className="text-xs text-muted-foreground">{roleName}</p>
               </div>
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-700 text-xs font-bold text-white">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-xs font-bold text-primary-foreground">
                 {initials}
               </div>
             </div>
