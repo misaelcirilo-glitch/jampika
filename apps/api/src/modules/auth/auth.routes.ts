@@ -47,7 +47,9 @@ router.post('/refresh', async (req, res, next) => {
     const result = await authService.refresh(refreshToken)
     res.json(result)
   } catch (e) {
-    next(e)
+    if (e instanceof z.ZodError) return res.status(400).json({ error: e.issues[0]?.message ?? 'Datos inválidos' })
+    // Token de refresco inválido/expirado → 401 (no 500): el cliente re-autentica.
+    return res.status(401).json({ error: 'Sesión expirada, inicia sesión de nuevo' })
   }
 })
 

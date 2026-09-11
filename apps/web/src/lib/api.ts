@@ -36,6 +36,20 @@ async function tryRefresh(): Promise<boolean> {
   return true
 }
 
+/** Sesión expirada e irrecuperable: limpia tokens y manda a iniciar sesión. */
+function forceLogout(): void {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.removeItem('jampika_token')
+    localStorage.removeItem('jampika_refresh')
+  } catch {
+    /* almacenamiento no disponible */
+  }
+  if (!window.location.pathname.startsWith('/login')) {
+    window.location.href = '/login?expirado=1'
+  }
+}
+
 export async function apiFetch<T = unknown>(
   path: string,
   options: RequestInit = {},
@@ -55,8 +69,9 @@ export async function apiFetch<T = unknown>(
   let res: Response
   try {
     res = await doFetch()
-    if (res.status === 401 && (await tryRefresh())) {
-      res = await doFetch()
+    if (res.status === 401) {
+      if (await tryRefresh()) res = await doFetch()
+      else forceLogout()
     }
   } catch {
     // fetch() rechaza (TypeError: "Load failed" / "Failed to fetch") cuando no
@@ -118,7 +133,10 @@ export async function apiUpload<T = unknown>(path: string, form: FormData): Prom
   let res: Response
   try {
     res = await doFetch()
-    if (res.status === 401 && (await tryRefresh())) res = await doFetch()
+    if (res.status === 401) {
+      if (await tryRefresh()) res = await doFetch()
+      else forceLogout()
+    }
   } catch {
     throw new ApiError(0, 'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.')
   }
