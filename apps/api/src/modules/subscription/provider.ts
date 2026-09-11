@@ -66,8 +66,8 @@ export class StripeProvider implements PaymentProvider {
         trial_settings: { end_behavior: { missing_payment_method: 'pause' } },
         metadata: { clinic_id: clinicId, app: 'jampika' },
       },
-      success_url: `${origin}/configuracion?suscripcion=ok&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/configuracion?suscripcion=cancel`,
+      success_url: `${origin}/settings?suscripcion=ok&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/planes?suscripcion=cancel`,
     })
     if (!session.url) throw new Error('No se pudo crear la sesión de pago')
     return { url: session.url }
@@ -79,7 +79,7 @@ export class StripeProvider implements PaymentProvider {
     if (!sub?.stripeCustomerId) throw new Error('La clínica aún no tiene suscripción')
     const session = await stripe.billingPortal.sessions.create({
       customer: sub.stripeCustomerId,
-      return_url: `${origin}/configuracion`,
+      return_url: `${origin}/settings?suscripcion=portal`,
     })
     return session.url
   }

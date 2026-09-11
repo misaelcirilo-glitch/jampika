@@ -1,18 +1,31 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Building2, CalendarClock, Clock, MessageCircle, UserPlus, Users } from 'lucide-react'
+import { Suspense, useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { Building2, CalendarClock, Clock, CreditCard, MessageCircle, UserPlus, Users } from 'lucide-react'
 import { ClinicTab } from './_tabs/ClinicTab'
 import { UsersTab } from './_tabs/UsersTab'
 import { ScheduleTab } from './_tabs/ScheduleTab'
 import { RemindersTab } from './_tabs/RemindersTab'
 import { BookingTab } from './_tabs/BookingTab'
+import { SubscriptionTab } from './_tabs/SubscriptionTab'
 import { api } from '@/lib/api'
 
-type Tab = 'clinic' | 'users' | 'schedule' | 'reminders' | 'reservas'
+type Tab = 'clinic' | 'users' | 'schedule' | 'reminders' | 'reservas' | 'suscripcion'
 
 export default function SettingsPage() {
-  const [tab, setTab] = useState<Tab>('users')
+  return (
+    <Suspense fallback={null}>
+      <SettingsContent />
+    </Suspense>
+  )
+}
+
+function SettingsContent() {
+  const searchParams = useSearchParams()
+  const subParam = searchParams.get('suscripcion')
+  const [tab, setTab] = useState<Tab>(subParam ? 'suscripcion' : 'users')
+  const [checkoutBanner, setCheckoutBanner] = useState<boolean>(subParam === 'ok')
   const [clinic, setClinic] = useState<any>(null)
   const [users, setUsers] = useState<any[]>([])
 
@@ -35,6 +48,7 @@ export default function SettingsPage() {
     { id: 'schedule', label: 'Horarios', icon: Clock },
     { id: 'reminders', label: 'Recordatorios', icon: MessageCircle },
     { id: 'reservas', label: 'Reservas', icon: CalendarClock },
+    { id: 'suscripcion', label: 'Suscripción', icon: CreditCard },
   ]
 
   return (
@@ -53,6 +67,20 @@ export default function SettingsPage() {
           </button>
         )}
       </div>
+
+      {/* Banner de éxito tras el checkout */}
+      {checkoutBanner && (
+        <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+          <span>¡Suscripción activada! Gracias.</span>
+          <button
+            onClick={() => setCheckoutBanner(false)}
+            className="text-emerald-600 hover:text-emerald-800"
+            aria-label="Cerrar"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-slate-200">
@@ -79,6 +107,7 @@ export default function SettingsPage() {
       {tab === 'schedule' && <ScheduleTab users={users} onChanged={refresh} />}
       {tab === 'reminders' && clinic && <RemindersTab clinic={clinic} onSaved={refresh} />}
       {tab === 'reservas' && clinic && <BookingTab clinic={clinic} users={users} onSaved={refresh} />}
+      {tab === 'suscripcion' && <SubscriptionTab />}
     </div>
   )
 }

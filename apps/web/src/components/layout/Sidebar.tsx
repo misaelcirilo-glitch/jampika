@@ -11,6 +11,7 @@ import {
   Package,
   Receipt,
   Settings,
+  Sparkles,
   Users,
   Activity,
 } from 'lucide-react'
@@ -81,8 +82,23 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Bottom: Config + Logout */}
+      {/* Bottom: Planes + Config + Logout */}
       <div className="space-y-0.5 border-t border-slate-100 px-3 py-3">
+        <Link
+          href="/planes"
+          className={cn(
+            'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+            pathname?.startsWith('/planes')
+              ? 'bg-blue-50 text-blue-700'
+              : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700',
+          )}
+        >
+          {pathname?.startsWith('/planes') && (
+            <span className="absolute left-3 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-blue-600" />
+          )}
+          <Sparkles className="h-[18px] w-[18px]" />
+          Planes
+        </Link>
         <Link
           href="/settings"
           className={cn(
