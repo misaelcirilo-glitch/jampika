@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { AlertTriangle, CreditCard, DollarSign, Download, Plus, Search } from 'lucide-react'
 import { api, apiDownload, ApiError } from '@/lib/api'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -33,6 +34,11 @@ export default function BillingPage() {
   const [periodo, setPeriodo] = useState(() => new Date().toISOString().slice(0, 7)) // YYYY-MM
   const [exportando, setExportando] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
+  // SUNAT (autoridad tributaria de Perú) solo aplica a clínicas de PE con perfil
+  // clínico (médico/homeópata). Terapeutas, psicólogos y coaches no lo ven.
+  const clinic = useAuthStore((s) => s.clinic)
+  const prof = clinic?.professionType
+  const isPeru = clinic?.country === 'PE' && (!prof || prof === 'medico' || prof === 'homeopata')
 
   const exportarRegistroVentas = async () => {
     setExportando(true)
@@ -119,35 +125,37 @@ export default function BillingPage() {
         </Card>
       </div>
 
-      {/* Registro de Ventas SUNAT (export para el contador) */}
-      <Card>
-        <CardContent className="p-5">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h2 className="text-base font-bold text-foreground">Registro de Ventas (SUNAT)</h2>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Exporta el CSV del periodo para cargarlo en tu Facturador SUNAT o software contable.
-              </p>
+      {/* Registro de Ventas SUNAT (export para el contador) — solo Perú */}
+      {isPeru && (
+        <Card>
+          <CardContent className="p-5">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h2 className="text-base font-bold text-foreground">Registro de Ventas (SUNAT)</h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Exporta el CSV del periodo para cargarlo en tu Facturador SUNAT o software contable.
+                </p>
+              </div>
+              <div className="flex items-end gap-3">
+                <label className="flex flex-col gap-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Periodo</span>
+                  <Input
+                    type="month"
+                    value={periodo}
+                    onChange={(e) => setPeriodo(e.target.value)}
+                    className="w-auto"
+                  />
+                </label>
+                <Button onClick={exportarRegistroVentas} disabled={exportando || !periodo}>
+                  <Download className="h-4 w-4" />
+                  {exportando ? 'Generando…' : 'Exportar registro de ventas'}
+                </Button>
+              </div>
             </div>
-            <div className="flex items-end gap-3">
-              <label className="flex flex-col gap-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Periodo</span>
-                <Input
-                  type="month"
-                  value={periodo}
-                  onChange={(e) => setPeriodo(e.target.value)}
-                  className="w-auto"
-                />
-              </label>
-              <Button onClick={exportarRegistroVentas} disabled={exportando || !periodo}>
-                <Download className="h-4 w-4" />
-                {exportando ? 'Generando…' : 'Exportar registro de ventas'}
-              </Button>
-            </div>
-          </div>
-          {exportError && <p className="mt-3 text-xs font-medium text-destructive">{exportError}</p>}
-        </CardContent>
-      </Card>
+            {exportError && <p className="mt-3 text-xs font-medium text-destructive">{exportError}</p>}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Search + Table */}
       <div>

@@ -5,12 +5,18 @@ import { CheckCircle2, Printer } from 'lucide-react'
 import { api } from '@/lib/api'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { useAuthStore } from '@/stores/authStore'
 
 export default function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const [invoice, setInvoice] = useState<any>(null)
   const [clinic, setClinic] = useState<any>(null)
   const [paying, setPaying] = useState(false)
+  // SUNAT solo para clínicas de Perú con perfil clínico (médico/homeópata).
+  const authClinic = useAuthStore((s) => s.clinic)
+  const aProf = authClinic?.professionType
+  const showSunat =
+    authClinic?.country === 'PE' && (!aProf || aProf === 'medico' || aProf === 'homeopata')
 
   async function load() {
     const [inv, c] = await Promise.all([
@@ -189,11 +195,13 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
 
           {/* Pie del comprobante */}
           <div className="mt-8 border-t border-border pt-3 text-center text-[10px] leading-relaxed text-muted-foreground">
-            {invoice.sunatHash && <p>Resumen: {invoice.sunatHash}</p>}
-            <p>Representación impresa del comprobante electrónico.</p>
-            <p className="mt-1 font-semibold text-warning-foreground">
-              DOCUMENTO EN PRUEBAS (BETA) — sin validez tributaria hasta su envío a SUNAT.
-            </p>
+            {showSunat && invoice.sunatHash && <p>Resumen: {invoice.sunatHash}</p>}
+            <p>Representación impresa del comprobante.</p>
+            {showSunat && (
+              <p className="mt-1 font-semibold text-warning-foreground">
+                DOCUMENTO EN PRUEBAS (BETA) — sin validez tributaria hasta su envío a SUNAT.
+              </p>
+            )}
           </div>
         </div>
       </div>
