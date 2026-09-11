@@ -24,6 +24,8 @@ import videoRoutes from './modules/telemedicine/video.routes.js'
 import publicVideoRoutes from './modules/telemedicine/public.routes.js'
 import questionnairesRoutes from './modules/questionnaires/questionnaires.routes.js'
 import publicQuestionnaireRoutes from './modules/questionnaires/public.routes.js'
+import subscriptionRoutes from './modules/subscription/subscription.routes.js'
+import { stripeWebhookHandler } from './modules/subscription/webhook.js'
 
 const app = express()
 
@@ -34,6 +36,14 @@ app.use(
     credentials: true,
   }),
 )
+// Webhook de Stripe: cuerpo CRUDO ANTES del express.json (la firma necesita el body
+// sin parsear). El resto de la app sigue usando express.json normal.
+app.post(
+  '/api/v1/stripe/webhook',
+  express.raw({ type: 'application/json' }),
+  stripeWebhookHandler,
+)
+
 app.use(express.json({ limit: '10mb' }))
 app.use(morgan(env.NODE_ENV === 'development' ? 'dev' : 'combined'))
 
@@ -70,6 +80,7 @@ app.use('/api/v1/public/booking', bookingRoutes) // reserva online pública (sin
 app.use('/api/v1/public/video', publicVideoRoutes) // videoconsulta pública (token HMAC)
 app.use('/api/v1/questionnaires', questionnairesRoutes) // cuestionarios/tareas (auth + módulo)
 app.use('/api/v1/public/questionnaire', publicQuestionnaireRoutes) // responder (público, token)
+app.use('/api/v1/stripe', subscriptionRoutes) // suscripción de plataforma (auth; el webhook va arriba)
 
 app.use(errorHandler)
 

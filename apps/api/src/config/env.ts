@@ -11,6 +11,10 @@ const schema = z.object({
   JWT_EXPIRES_IN: z.string().default('15m'),
   JWT_REFRESH_EXPIRES_IN: z.string().default('30d'),
   CORS_ORIGIN: z.string().default('http://localhost:3000'),
+  PAYMENT_PROVIDER: z.string().default('stripe'),
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  APP_URL: z.string().url().optional(), // base para success/cancel del checkout
 })
 
 const parsed = schema.safeParse(process.env)

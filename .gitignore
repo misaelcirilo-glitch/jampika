@@ -10,3 +10,9 @@ build
 coverage
 *.tsbuildinfo
 prisma/migrations/dev.db*
+
+.vercel
+.env*.local
+
+# clave Stripe local (NO subir)
+scripts/.stripe-key.txt
