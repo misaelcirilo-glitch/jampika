@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import type { DocumentType, Gender, Patient } from '@jampika/shared'
+import { Button } from '@/components/ui/button'
 
 export interface PatientFormValues {
   documentType: DocumentType
@@ -110,13 +111,14 @@ export function PatientForm({
     setNewCondition('')
   }
 
-  const input = 'w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
-  const label = 'mb-1 block text-sm font-medium text-slate-700'
+  const input =
+    'flex h-10 w-full rounded-md border border-input bg-card px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50'
+  const label = 'mb-1 block text-sm font-medium text-foreground'
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 rounded-xl bg-white p-6 shadow-sm">
+    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-border bg-card p-6 shadow-card">
       <section>
-        <h2 className="mb-3 text-sm font-semibold uppercase text-slate-500">Datos personales</h2>
+        <h2 className="mb-3 text-sm font-semibold uppercase text-muted-foreground">Datos personales</h2>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className={label}>Tipo de documento</label>
@@ -199,7 +201,7 @@ export function PatientForm({
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-semibold uppercase text-slate-500">Contacto</h2>
+        <h2 className="mb-3 text-sm font-semibold uppercase text-muted-foreground">Contacto</h2>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className={label}>Teléfono</label>
@@ -246,7 +248,7 @@ export function PatientForm({
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-semibold uppercase text-slate-500">Seguro</h2>
+        <h2 className="mb-3 text-sm font-semibold uppercase text-muted-foreground">Seguro</h2>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className={label}>Proveedor</label>
@@ -268,7 +270,7 @@ export function PatientForm({
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-semibold uppercase text-slate-500">Antecedentes</h2>
+        <h2 className="mb-3 text-sm font-semibold uppercase text-muted-foreground">Antecedentes</h2>
 
         <div className="mb-4">
           <label className={label}>Alergias</label>
@@ -276,7 +278,7 @@ export function PatientForm({
             {form.allergies.map((a, idx) => (
               <span
                 key={idx}
-                className="flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-xs text-red-700"
+                className="flex items-center gap-1 rounded-full bg-destructive/10 px-3 py-1 text-xs text-destructive"
               >
                 {a}
                 <button
@@ -303,13 +305,9 @@ export function PatientForm({
                 }
               }}
             />
-            <button
-              type="button"
-              onClick={addAllergy}
-              className="rounded-lg border border-slate-300 px-4 text-sm"
-            >
+            <Button type="button" variant="outline" onClick={addAllergy}>
               +
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -319,7 +317,7 @@ export function PatientForm({
             {form.chronicConditions.map((c, idx) => (
               <span
                 key={idx}
-                className="flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-xs text-amber-700"
+                className="flex items-center gap-1 rounded-full bg-warning/15 px-3 py-1 text-xs text-warning-foreground"
               >
                 {c}
                 <button
@@ -349,13 +347,9 @@ export function PatientForm({
                 }
               }}
             />
-            <button
-              type="button"
-              onClick={addCondition}
-              className="rounded-lg border border-slate-300 px-4 text-sm"
-            >
+            <Button type="button" variant="outline" onClick={addCondition}>
               +
-            </button>
+            </Button>
           </div>
         </div>
       </section>
@@ -370,26 +364,18 @@ export function PatientForm({
       </section>
 
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
           {error}
         </div>
       )}
 
       <div className="flex justify-end gap-2">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700"
-        >
+        <Button type="button" variant="outline" onClick={onCancel}>
           Cancelar
-        </button>
-        <button
-          type="submit"
-          disabled={saving}
-          className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
-        >
+        </Button>
+        <Button type="submit" disabled={saving}>
           {saving ? 'Guardando…' : submitLabel}
-        </button>
+        </Button>
       </div>
     </form>
   )

@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { cn } from '@/lib/utils'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1'
 
@@ -76,29 +80,29 @@ export default function FormularioPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-100 via-white to-blue-50 p-4 flex items-start justify-center">
-      <div className="my-6 w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
+    <main className="flex min-h-screen items-start justify-center bg-muted p-4">
+      <Card className="my-6 w-full max-w-lg p-6 shadow-lg">
         {loading ? (
-          <p className="py-10 text-center text-sm text-slate-400">Cargando…</p>
+          <p className="py-10 text-center text-sm text-muted-foreground">Cargando…</p>
         ) : !form ? (
-          <p className="py-10 text-center text-sm text-slate-500">Este formulario no es válido o ha expirado.</p>
+          <p className="py-10 text-center text-sm text-muted-foreground">Este formulario no es válido o ha expirado.</p>
         ) : done ? (
           <div className="py-8 text-center">
             <div className="text-4xl">✅</div>
-            <h1 className="mt-2 text-lg font-bold text-slate-800">¡Gracias!</h1>
-            <p className="mt-1 text-sm text-slate-600">Tus respuestas se enviaron a {form.clinicName}.</p>
+            <h1 className="mt-2 text-lg font-bold text-foreground">¡Gracias!</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Tus respuestas se enviaron a {form.clinicName}.</p>
           </div>
         ) : (
           <>
             <div className="mb-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">{form.clinicName}</p>
-              <h1 className="text-xl font-bold text-slate-900">{form.title}</h1>
+              <p className="text-xs font-semibold uppercase tracking-wide text-primary">{form.clinicName}</p>
+              <h1 className="text-xl font-bold text-foreground">{form.title}</h1>
             </div>
 
             <div className="space-y-5">
               {form.questions.map((q, i) => (
                 <div key={q.id}>
-                  <p className="mb-2 text-sm font-medium text-slate-700">
+                  <p className="mb-2 text-sm font-medium text-foreground">
                     {form.questions.length > 1 ? `${i + 1}. ` : ''}{q.text}
                   </p>
                   {q.kind === 'likert' && q.options ? (
@@ -108,20 +112,22 @@ export default function FormularioPage() {
                           key={o.value}
                           type="button"
                           onClick={() => setAnswers((a) => ({ ...a, [q.id]: o.value }))}
-                          className={`rounded-lg border px-3 py-2 text-left text-sm ${
-                            answers[q.id] === o.value ? 'border-blue-500 bg-blue-50 text-blue-700 font-medium' : 'border-slate-200 text-slate-600'
-                          }`}
+                          className={cn(
+                            'rounded-lg border px-3 py-2 text-left text-sm transition-colors',
+                            answers[q.id] === o.value
+                              ? 'border-primary bg-secondary font-medium text-secondary-foreground'
+                              : 'border-border text-muted-foreground hover:bg-muted',
+                          )}
                         >
                           {o.label}
                         </button>
                       ))}
                     </div>
                   ) : (
-                    <textarea
+                    <Textarea
                       rows={3}
                       value={(answers[q.id] as string) ?? ''}
                       onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
                       placeholder="Escribe tu respuesta…"
                     />
                   )}
@@ -129,17 +135,15 @@ export default function FormularioPage() {
               ))}
             </div>
 
-            {error && <p className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p>}
-            <button
-              onClick={submit}
-              disabled={submitting || !allAnswered}
-              className="mt-5 w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
-            >
+            {error && (
+              <p className="mt-3 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
+            )}
+            <Button onClick={submit} disabled={submitting || !allAnswered} className="mt-5 w-full">
               {submitting ? 'Enviando…' : 'Enviar respuestas'}
-            </button>
+            </Button>
           </>
         )}
-      </div>
+      </Card>
     </main>
   )
 }
