@@ -34,11 +34,8 @@ export default function BillingPage() {
   const [periodo, setPeriodo] = useState(() => new Date().toISOString().slice(0, 7)) // YYYY-MM
   const [exportando, setExportando] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
-  // SUNAT (autoridad tributaria de Perú) solo aplica a clínicas de PE con perfil
-  // clínico (médico/homeópata). Terapeutas, psicólogos y coaches no lo ven.
-  const clinic = useAuthStore((s) => s.clinic)
-  const prof = clinic?.professionType
-  const isPeru = clinic?.country === 'PE' && (!prof || prof === 'medico' || prof === 'homeopata')
+  // SUNAT (autoridad tributaria de Perú) solo se muestra en clínicas de Perú.
+  const isPeru = useAuthStore((s) => s.clinic)?.country === 'PE'
 
   const exportarRegistroVentas = async () => {
     setExportando(true)

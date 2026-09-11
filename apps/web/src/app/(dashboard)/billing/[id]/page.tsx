@@ -12,11 +12,8 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
   const [invoice, setInvoice] = useState<any>(null)
   const [clinic, setClinic] = useState<any>(null)
   const [paying, setPaying] = useState(false)
-  // SUNAT solo para clínicas de Perú con perfil clínico (médico/homeópata).
-  const authClinic = useAuthStore((s) => s.clinic)
-  const aProf = authClinic?.professionType
-  const showSunat =
-    authClinic?.country === 'PE' && (!aProf || aProf === 'medico' || aProf === 'homeopata')
+  // SUNAT solo se muestra en clínicas de Perú.
+  const showSunat = useAuthStore((s) => s.clinic)?.country === 'PE'
 
   async function load() {
     const [inv, c] = await Promise.all([
