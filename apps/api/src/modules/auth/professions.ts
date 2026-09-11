@@ -6,12 +6,16 @@
 
 export type ProfessionType = 'medico' | 'psicologo' | 'terapeuta' | 'coach' | 'homeopata'
 
+// Funciones INCLUIDAS en todos los planes (ya no son add-ons de pago; el precio
+// se diferencia por tamaño de clínica, no por estas funciones).
+const STANDARD = ['chat', 'reservas', 'telemedicina', 'cuestionarios']
+
 export const PROFESSION_MODULES: Record<ProfessionType, string[]> = {
-  medico: ['inventario', 'recetas', 'cie10', 'cuestionarios'],
-  psicologo: ['cuestionarios'],
-  terapeuta: ['cuestionarios'],
-  coach: ['cuestionarios'],
-  homeopata: ['recetas', 'cuestionarios'],
+  medico: ['inventario', 'recetas', 'cie10', ...STANDARD],
+  psicologo: [...STANDARD],
+  terapeuta: [...STANDARD],
+  coach: [...STANDARD],
+  homeopata: ['recetas', ...STANDARD],
 }
 
 export const PROFESSION_TYPES = Object.keys(PROFESSION_MODULES) as ProfessionType[]
