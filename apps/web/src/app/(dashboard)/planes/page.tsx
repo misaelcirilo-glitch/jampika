@@ -16,6 +16,9 @@ import {
 import { startCheckout } from '@/features/subscription/subscription.service'
 import { useAuthStore } from '@/stores/authStore'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 
 // CURRENCY viene como 'USD'; hoy solo mostramos el símbolo $. Si en el futuro
 // hay otras monedas, mapear aquí en vez de asumir '$'.
@@ -58,54 +61,50 @@ function PlanesContent() {
     <div className="mx-auto max-w-6xl space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">Planes</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-foreground">Planes</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Elige el plan de Jampika para tu clínica. 30 días de prueba gratis, cancela cuando quieras.
         </p>
       </div>
 
       {/* Aviso de pago cancelado (vuelta desde Stripe con ?suscripcion=cancel) */}
       {canceled && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+        <div className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm font-medium text-warning-foreground">
           Pago cancelado. Puedes intentarlo cuando quieras.
         </div>
       )}
 
       {/* Banner de error del checkout */}
       {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive">
           {error}
         </div>
       )}
 
       {/* Nota para no-admins */}
       {!isAdmin && (
-        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-500">
+        <div className="rounded-lg border border-border bg-muted px-4 py-3 text-sm font-medium text-muted-foreground">
           Solo el administrador de la clínica puede gestionar la suscripción.
         </div>
       )}
 
       {/* Toggle Mensual / Anual */}
       <div className="flex justify-center">
-        <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
-          <button
+        <div className="inline-flex gap-1 rounded-xl border border-border bg-card p-1 shadow-sm">
+          <Button
+            variant={period === 'monthly' ? 'default' : 'ghost'}
+            size="sm"
             onClick={() => setPeriod('monthly')}
-            className={cn(
-              'rounded-lg px-5 py-2 text-sm font-semibold transition-colors',
-              period === 'monthly' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700',
-            )}
           >
             Mensual
-          </button>
-          <button
+          </Button>
+          <Button
+            variant={period === 'yearly' ? 'default' : 'ghost'}
+            size="sm"
             onClick={() => setPeriod('yearly')}
-            className={cn(
-              'rounded-lg px-5 py-2 text-sm font-semibold transition-colors',
-              period === 'yearly' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700',
-            )}
           >
             Anual
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -142,66 +141,62 @@ function PlanCardView({ card, period, isAdmin, pending, anyPending, onSubscribe 
   const savings = yearlySavings(card)
 
   return (
-    <div
+    <Card
       className={cn(
-        'relative flex flex-col rounded-xl border bg-white p-6 shadow-sm',
-        card.highlight ? 'border-blue-600 ring-2 ring-blue-600' : 'border-slate-200',
+        'relative flex flex-col p-6',
+        card.highlight ? 'border-primary ring-2 ring-primary' : '',
       )}
     >
       {/* Etiqueta "Más popular" en el plan destacado */}
       {card.highlight && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+        <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 shadow-sm">
           Más popular
-        </span>
+        </Badge>
       )}
 
-      <h2 className="text-lg font-bold text-slate-800">{card.label}</h2>
-      <p className="mt-1 min-h-[40px] text-sm text-slate-500">{card.tagline}</p>
+      <h2 className="text-lg font-bold text-foreground">{card.label}</h2>
+      <p className="mt-1 min-h-[40px] text-sm text-muted-foreground">{card.tagline}</p>
 
       {/* Precio grande */}
       <div className="mt-4 flex items-baseline gap-1">
-        <span className="text-4xl font-bold text-slate-800">
+        <span className="text-4xl font-bold text-foreground">
           {CURRENCY_SYMBOL}
           {price}
         </span>
-        <span className="text-sm font-medium text-slate-500">{priceSuffix}</span>
+        <span className="text-sm font-medium text-muted-foreground">{priceSuffix}</span>
       </div>
 
       {/* Badge de ahorro anual */}
       {period === 'yearly' && savings > 0 && (
-        <span className="mt-2 inline-flex w-fit rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700">
+        <Badge variant="success" className="mt-2 w-fit">
           Ahorra {CURRENCY_SYMBOL}
           {savings} al año
-        </span>
+        </Badge>
       )}
 
-      <p className="mt-3 text-sm font-semibold text-slate-700">
+      <p className="mt-3 text-sm font-semibold text-foreground">
         {professionalsLabel(card.maxProfessionals)}
       </p>
 
       {/* Lista de features (mismo bundle para los 3) */}
       <ul className="mt-4 flex-1 space-y-2.5">
         {PLAN_FEATURES.map((feature) => (
-          <li key={feature} className="flex items-start gap-2 text-sm text-slate-600">
-            <Check className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
+          <li key={feature} className="flex items-start gap-2 text-sm text-muted-foreground">
+            <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
             <span>{feature}</span>
           </li>
         ))}
       </ul>
 
       {/* Botón Suscribirme */}
-      <button
+      <Button
         onClick={() => onSubscribe(card.key)}
         disabled={!isAdmin || anyPending}
-        className={cn(
-          'mt-6 flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors',
-          'bg-blue-600 hover:bg-blue-700',
-          'disabled:cursor-not-allowed disabled:bg-slate-300 disabled:hover:bg-slate-300',
-        )}
+        className="mt-6 w-full"
       >
         {pending && <Loader2 className="h-4 w-4 animate-spin" />}
         {pending ? 'Redirigiendo…' : 'Suscribirme'}
-      </button>
-    </div>
+      </Button>
+    </Card>
   )
 }

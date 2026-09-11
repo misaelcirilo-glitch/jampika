@@ -2,6 +2,18 @@
 
 import { useState } from 'react'
 import { api } from '@/lib/api'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 const DAYS: { key: string; label: string }[] = [
   { key: 'mon', label: 'Lunes' },
@@ -74,28 +86,29 @@ export function ScheduleTab({ users, onChanged }: { users: any[]; onChanged: () 
 
   if (doctors.length === 0) {
     return (
-      <div className="rounded-xl bg-white p-8 text-center text-sm text-slate-500 shadow-sm">
+      <Card className="p-8 text-center text-sm text-muted-foreground">
         Agrega profesionales con rol <strong>doctor</strong> para configurar sus horarios.
-      </div>
+      </Card>
     )
   }
 
   return (
-    <div className="rounded-xl bg-white p-6 shadow-sm">
+    <Card className="p-6">
       <div className="mb-6">
-        <label className="mb-1 block text-sm font-medium text-slate-700">Profesional</label>
-        <select
-          className="w-full rounded-lg border border-slate-300 px-3 py-2"
-          value={selected}
-          onChange={(e) => selectDoctor(e.target.value)}
-        >
-          {doctors.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.firstName} {d.lastName}
-              {d.specialty && ` · ${d.specialty}`}
-            </option>
-          ))}
-        </select>
+        <Label className="mb-1 block">Profesional</Label>
+        <Select value={selected} onValueChange={selectDoctor}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {doctors.map((d) => (
+              <SelectItem key={d.id} value={d.id}>
+                {d.firstName} {d.lastName}
+                {d.specialty && ` · ${d.specialty}`}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-2">
@@ -105,53 +118,44 @@ export function ScheduleTab({ users, onChanged }: { users: any[]; onChanged: () 
           return (
             <div
               key={key}
-              className="flex items-center gap-4 rounded-lg border border-slate-200 p-3"
+              className="flex items-center gap-4 rounded-lg border border-border p-3"
             >
-              <label className="flex w-28 items-center gap-2 text-sm font-medium">
-                <input
-                  type="checkbox"
-                  checked={active}
-                  onChange={() => toggleDay(key)}
-                  className="h-4 w-4"
-                />
+              <label className="flex w-28 items-center gap-2 text-sm font-medium text-foreground">
+                <Switch checked={active} onCheckedChange={() => toggleDay(key)} />
                 {label}
               </label>
               {active ? (
                 <div className="flex items-center gap-2 text-sm">
-                  <span className="text-slate-500">De</span>
-                  <input
+                  <span className="text-muted-foreground">De</span>
+                  <Input
                     type="time"
-                    className="rounded-lg border border-slate-300 px-2 py-1"
+                    className="h-9 w-auto"
                     value={slot!.start}
                     onChange={(e) => updateSlot(key, 'start', e.target.value)}
                   />
-                  <span className="text-slate-500">a</span>
-                  <input
+                  <span className="text-muted-foreground">a</span>
+                  <Input
                     type="time"
-                    className="rounded-lg border border-slate-300 px-2 py-1"
+                    className="h-9 w-auto"
                     value={slot!.end}
                     onChange={(e) => updateSlot(key, 'end', e.target.value)}
                   />
                 </div>
               ) : (
-                <span className="text-sm text-slate-400">No atiende</span>
+                <span className="text-sm text-muted-foreground">No atiende</span>
               )}
             </div>
           )
         })}
       </div>
 
-      {msg && <p className="mt-4 text-sm text-slate-600">{msg}</p>}
+      {msg && <p className="mt-4 text-sm text-muted-foreground">{msg}</p>}
 
       <div className="mt-6 flex justify-end">
-        <button
-          onClick={onSave}
-          disabled={saving}
-          className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
-        >
+        <Button onClick={onSave} disabled={saving}>
           {saving ? 'Guardando…' : 'Guardar horario'}
-        </button>
+        </Button>
       </div>
-    </div>
+    </Card>
   )
 }

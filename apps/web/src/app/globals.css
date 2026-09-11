@@ -2,15 +2,117 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: light;
+/* ============================================================
+   Tema Jampika — "clínico de confianza".
+   Neutros fríos + azul-teal médico como primario y verde salud como éxito.
+   Tokens semánticos (shadcn/ui). Modo claro por defecto; .dark redefine.
+   ============================================================ */
+@layer base {
+  :root {
+    --background: 210 40% 98%;
+    --foreground: 215 28% 17%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 28% 17%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 28% 17%;
+
+    /* Azul-teal médico: confianza y calma */
+    --primary: 201 94% 37%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 201 60% 95%;
+    --secondary-foreground: 201 90% 24%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    /* Acento verde salud */
+    --accent: 160 55% 94%;
+    --accent-foreground: 162 84% 22%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 160 84% 34%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 48%;
+    --warning-foreground: 30 60% 15%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 201 94% 37%;
+
+    --radius: 0.75rem;
+
+    /* Barra lateral con su propia superficie */
+    --sidebar: 206 33% 14%;
+    --sidebar-foreground: 210 30% 88%;
+    --sidebar-border: 206 25% 22%;
+    --sidebar-accent: 201 94% 40%;
+    --sidebar-accent-foreground: 0 0% 100%;
+
+    --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    color-scheme: light;
+  }
+
+  .dark {
+    --background: 215 30% 9%;
+    --foreground: 210 40% 96%;
+
+    --card: 215 27% 12%;
+    --card-foreground: 210 40% 96%;
+
+    --popover: 215 27% 12%;
+    --popover-foreground: 210 40% 96%;
+
+    --primary: 199 89% 52%;
+    --primary-foreground: 215 40% 8%;
+
+    --secondary: 215 25% 18%;
+    --secondary-foreground: 210 40% 96%;
+
+    --muted: 215 25% 16%;
+    --muted-foreground: 215 16% 60%;
+
+    --accent: 162 40% 18%;
+    --accent-foreground: 160 60% 82%;
+
+    --destructive: 0 63% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 160 70% 42%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 52%;
+    --warning-foreground: 30 60% 12%;
+
+    --border: 215 20% 22%;
+    --input: 215 20% 22%;
+    --ring: 199 89% 52%;
+
+    --sidebar: 215 32% 10%;
+    --sidebar-foreground: 210 30% 85%;
+    --sidebar-border: 215 22% 20%;
+    --sidebar-accent: 199 89% 48%;
+    --sidebar-accent-foreground: 215 40% 8%;
+
+    color-scheme: dark;
+  }
 }
 
-html, body {
-  height: 100%;
-}
-
-body {
-  @apply bg-slate-50 text-slate-900 antialiased;
-  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html,
+  body {
+    height: 100%;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+  }
 }

@@ -5,12 +5,25 @@ import { useEffect, useState } from 'react'
 import { AlertTriangle, CreditCard, DollarSign, Download, Plus, Search } from 'lucide-react'
 import { api, apiDownload, ApiError } from '@/lib/api'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
+import type { BadgeProps } from '@/components/ui/badge'
 
-const STATUS_BADGES: Record<string, { label: string; className: string }> = {
-  paid: { label: 'Pagado', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  pending: { label: 'Pendiente', className: 'bg-amber-50 text-amber-700 border-amber-200' },
-  overdue: { label: 'Vencido', className: 'bg-red-50 text-red-700 border-red-200' },
-  cancelled: { label: 'Anulado', className: 'bg-slate-50 text-slate-500 border-slate-200' },
+const STATUS_BADGES: Record<string, { label: string; variant: BadgeProps['variant'] }> = {
+  paid: { label: 'Pagado', variant: 'success' },
+  pending: { label: 'Pendiente', variant: 'warning' },
+  overdue: { label: 'Vencido', variant: 'destructive' },
+  cancelled: { label: 'Anulado', variant: 'outline' },
 }
 
 export default function BillingPage() {
@@ -62,162 +75,166 @@ export default function BillingPage() {
       {/* Stats + Action */}
       <div className="grid grid-cols-3 gap-4">
         {/* Total Income */}
-        <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-emerald-50 p-2.5">
-              <DollarSign className="h-5 w-5 text-emerald-600" />
+        <Card>
+          <CardContent className="p-5">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-success/10 p-2.5">
+                <DollarSign className="h-5 w-5 text-success" />
+              </div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Ingresos Totales</p>
             </div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Ingresos Totales</p>
-          </div>
-          <p className="mt-3 text-2xl font-black text-slate-800">
-            {formatCurrency(report?.totalIncome ?? 0)}
-          </p>
-        </div>
+            <p className="mt-3 text-2xl font-black text-foreground">
+              {formatCurrency(report?.totalIncome ?? 0)}
+            </p>
+          </CardContent>
+        </Card>
 
         {/* Pending */}
-        <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-amber-50 p-2.5">
-              <CreditCard className="h-5 w-5 text-amber-600" />
+        <Card>
+          <CardContent className="p-5">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-warning/15 p-2.5">
+                <CreditCard className="h-5 w-5 text-warning-foreground" />
+              </div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Pendiente de Pago</p>
             </div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pendiente de Pago</p>
-          </div>
-          <p className="mt-3 text-2xl font-black text-slate-800">{formatCurrency(pendingTotal)}</p>
-        </div>
+            <p className="mt-3 text-2xl font-black text-foreground">{formatCurrency(pendingTotal)}</p>
+          </CardContent>
+        </Card>
 
         {/* Quick Action */}
-        <div className="rounded-2xl bg-gradient-to-br from-blue-600 to-blue-800 p-5 text-white flex items-center justify-between">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-200">Acción Rápida</p>
-            <p className="mt-1 text-lg font-bold">Nueva Factura</p>
-          </div>
-          <Link
-            href="/billing/new"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors"
-          >
-            <Plus className="h-5 w-5 text-white" />
-          </Link>
-        </div>
+        <Card className="bg-primary text-primary-foreground">
+          <CardContent className="flex h-full items-center justify-between p-5">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-primary-foreground/70">Acción Rápida</p>
+              <p className="mt-1 text-lg font-bold">Nueva Factura</p>
+            </div>
+            <Link
+              href="/billing/new"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-foreground/20 transition-colors hover:bg-primary-foreground/30"
+            >
+              <Plus className="h-5 w-5" />
+            </Link>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Registro de Ventas SUNAT (export para el contador) */}
-      <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-100">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h2 className="text-base font-bold text-slate-800">Registro de Ventas (SUNAT)</h2>
-            <p className="mt-1 text-xs text-slate-500">
-              Exporta el CSV del periodo para cargarlo en tu Facturador SUNAT o software contable.
-            </p>
+      <Card>
+        <CardContent className="p-5">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h2 className="text-base font-bold text-foreground">Registro de Ventas (SUNAT)</h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Exporta el CSV del periodo para cargarlo en tu Facturador SUNAT o software contable.
+              </p>
+            </div>
+            <div className="flex items-end gap-3">
+              <label className="flex flex-col gap-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Periodo</span>
+                <Input
+                  type="month"
+                  value={periodo}
+                  onChange={(e) => setPeriodo(e.target.value)}
+                  className="w-auto"
+                />
+              </label>
+              <Button onClick={exportarRegistroVentas} disabled={exportando || !periodo}>
+                <Download className="h-4 w-4" />
+                {exportando ? 'Generando…' : 'Exportar registro de ventas'}
+              </Button>
+            </div>
           </div>
-          <div className="flex items-end gap-3">
-            <label className="flex flex-col gap-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Periodo</span>
-              <input
-                type="month"
-                value={periodo}
-                onChange={(e) => setPeriodo(e.target.value)}
-                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-              />
-            </label>
-            <button
-              onClick={exportarRegistroVentas}
-              disabled={exportando || !periodo}
-              className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
-            >
-              <Download className="h-4 w-4" />
-              {exportando ? 'Generando…' : 'Exportar registro de ventas'}
-            </button>
-          </div>
-        </div>
-        {exportError && <p className="mt-3 text-xs font-medium text-red-600">{exportError}</p>}
-      </div>
+          {exportError && <p className="mt-3 text-xs font-medium text-destructive">{exportError}</p>}
+        </CardContent>
+      </Card>
 
       {/* Search + Table */}
       <div>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-base font-bold text-slate-800">Historial de Facturas</h2>
-          <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
-            <Search className="h-4 w-4 text-slate-400" />
+          <h2 className="text-base font-bold text-foreground">Historial de Facturas</h2>
+          <div className="flex items-center gap-2 rounded-md border border-input bg-card px-3 py-2 shadow-sm">
+            <Search className="h-4 w-4 text-muted-foreground" />
             <input
               type="text"
               placeholder="Buscar…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-40 bg-transparent text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none"
+              className="w-40 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
           </div>
         </div>
 
-        <div className="rounded-2xl bg-white shadow-sm border border-slate-100 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-100 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                <th className="px-5 py-3.5">Factura #</th>
-                <th className="px-5 py-3.5">Paciente</th>
-                <th className="px-5 py-3.5">Fecha</th>
-                <th className="px-5 py-3.5">Monto</th>
-                <th className="px-5 py-3.5">Estado</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
+        <Card className="overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Factura #</TableHead>
+                <TableHead>Paciente</TableHead>
+                <TableHead>Fecha</TableHead>
+                <TableHead>Monto</TableHead>
+                <TableHead>Estado</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {filtered.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="py-12 text-center text-sm text-slate-400">
+                <TableRow>
+                  <TableCell colSpan={5} className="py-12 text-center text-sm text-muted-foreground">
                     Sin comprobantes emitidos.
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               )}
               {filtered.map((i) => {
                 const badge = STATUS_BADGES[i.status] ?? STATUS_BADGES.pending!
                 return (
-                  <tr
+                  <TableRow
                     key={i.id}
                     onClick={() => (window.location.href = `/billing/${i.id}`)}
-                    className="group cursor-pointer hover:bg-slate-50/50 transition-colors"
+                    className="group cursor-pointer"
                   >
-                    <td className="px-5 py-4">
-                      <span className="font-semibold text-blue-600 group-hover:underline">
+                    <TableCell>
+                      <span className="font-semibold text-primary group-hover:underline">
                         {i.invoiceNumber}
                       </span>
-                    </td>
-                    <td className="px-5 py-4">
+                    </TableCell>
+                    <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
                           {i.patient?.firstName?.[0]}{i.patient?.lastName?.[0]}
                         </div>
-                        <span className="font-medium text-slate-700">
+                        <span className="font-medium text-foreground">
                           {i.patient?.firstName} {i.patient?.lastName}
                         </span>
                       </div>
-                    </td>
-                    <td className="px-5 py-4 text-slate-500">{formatDate(i.createdAt)}</td>
-                    <td className="px-5 py-4 font-bold text-slate-800">
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{formatDate(i.createdAt)}</TableCell>
+                    <TableCell className="font-bold text-foreground">
                       {formatCurrency(Number(i.total), i.currency)}
-                    </td>
-                    <td className="px-5 py-4">
-                      <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${badge.className}`}>
-                        {badge.label}
-                      </span>
-                    </td>
-                  </tr>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={badge.variant}>{badge.label}</Badge>
+                    </TableCell>
+                  </TableRow>
                 )
               })}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
+        </Card>
       </div>
 
       {/* Collection Alert */}
       {pendingCount > 0 && (
-        <div className="rounded-2xl bg-amber-50 border border-amber-200 p-5 flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
-          <div>
-            <h3 className="text-sm font-bold text-amber-800">Alerta de Cobros</h3>
-            <p className="mt-1 text-xs text-amber-600">
-              Tienes {pendingCount} factura{pendingCount !== 1 ? 's' : ''} pendiente{pendingCount !== 1 ? 's' : ''} de cobro. Se recomienda enviar recordatorios.
-            </p>
-          </div>
-        </div>
+        <Card className="border-warning/40 bg-warning/10">
+          <CardContent className="flex items-start gap-3 p-5">
+            <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-warning-foreground" />
+            <div>
+              <h3 className="text-sm font-bold text-warning-foreground">Alerta de Cobros</h3>
+              <p className="mt-1 text-xs text-warning-foreground/80">
+                Tienes {pendingCount} factura{pendingCount !== 1 ? 's' : ''} pendiente{pendingCount !== 1 ? 's' : ''} de cobro. Se recomienda enviar recordatorios.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   )

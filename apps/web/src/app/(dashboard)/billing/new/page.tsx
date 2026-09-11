@@ -7,6 +7,10 @@ import type { Patient } from '@jampika/shared'
 import { listPatients } from '@/features/patients/patients.service'
 import { api } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 type AfectacionIgv = 'gravado' | 'exonerado' | 'inafecto'
 
@@ -103,214 +107,201 @@ export default function NewInvoicePage() {
     }
   }
 
-  const input = 'w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
-  const label = 'mb-1 block text-sm font-medium text-slate-700'
+  const selectClass =
+    'flex h-10 w-full rounded-md border border-input bg-card px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50'
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="mb-6 text-2xl font-semibold text-slate-800">Nuevo comprobante</h1>
-      <form onSubmit={onSubmit} className="space-y-5 rounded-xl bg-white p-6 shadow-sm">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className={label}>Paciente</label>
-            <select
-              className={input}
-              required
-              value={patientId}
-              onChange={(e) => setPatientId(e.target.value)}
-            >
-              <option value="">— Selecciona —</option>
-              {patients.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.lastName}, {p.firstName}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className={label}>Tipo</label>
-            <select
-              className={input}
-              value={invoiceType}
-              onChange={(e) => setInvoiceType(e.target.value as any)}
-            >
-              <option value="boleta">Boleta</option>
-              <option value="factura">Factura</option>
-            </select>
-          </div>
-        </div>
-
-        <section>
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-sm font-semibold uppercase text-slate-500">Items</h2>
-            <div className="flex gap-2">
-              <select
-                className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
-                onChange={(e) => {
-                  if (e.target.value) {
-                    addServiceAsItem(e.target.value)
-                    e.target.value = ''
-                  }
-                }}
-              >
-                <option value="">+ Desde catálogo</option>
-                {services.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name} · {formatCurrency(Number(s.price))}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                onClick={addBlankItem}
-                className="rounded-lg border border-slate-300 px-3 py-1 text-sm"
-              >
-                + Libre
-              </button>
-            </div>
-          </div>
-
-          {items.length === 0 && (
-            <p className="rounded-lg border border-dashed border-slate-300 p-4 text-center text-sm text-slate-400">
-              Añade items desde el catálogo o manualmente.
-            </p>
-          )}
-
-          <div className="space-y-2">
-            {items.map((it, idx) => (
-              <div key={idx} className="grid grid-cols-[1fr_70px_100px_120px_100px_40px] items-center gap-2">
-                <input
-                  className={input}
-                  placeholder="Descripción"
-                  value={it.description}
-                  onChange={(e) => updateItem(idx, { description: e.target.value })}
-                />
-                <input
-                  type="number"
-                  min="1"
-                  className={input}
-                  value={it.quantity}
-                  onChange={(e) => updateItem(idx, { quantity: Number(e.target.value) })}
-                />
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  className={input}
-                  value={it.unitPrice}
-                  onChange={(e) => updateItem(idx, { unitPrice: Number(e.target.value) })}
-                />
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Nuevo comprobante</h1>
+      <Card>
+        <CardContent className="p-6">
+          <form onSubmit={onSubmit} className="space-y-5">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label>Paciente</Label>
                 <select
-                  className={input}
-                  value={it.afectacionIgv}
-                  onChange={(e) => updateItem(idx, { afectacionIgv: e.target.value as AfectacionIgv })}
+                  className={selectClass}
+                  required
+                  value={patientId}
+                  onChange={(e) => setPatientId(e.target.value)}
                 >
-                  {AFECTACION_OPCIONES.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
+                  <option value="">— Selecciona —</option>
+                  {patients.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.lastName}, {p.firstName}
                     </option>
                   ))}
                 </select>
-                <span className="text-right text-sm font-medium text-slate-700">
-                  {formatCurrency(it.quantity * it.unitPrice)}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => removeItem(idx)}
-                  className="text-slate-400 hover:text-red-600"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
               </div>
-            ))}
-          </div>
-        </section>
-
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className={label}>IGV %</label>
-            <input
-              type="number"
-              className={input}
-              value={taxRate}
-              onChange={(e) => setTaxRate(Number(e.target.value))}
-            />
-          </div>
-          <div>
-            <label className={label}>Descuento</label>
-            <input
-              type="number"
-              className={input}
-              value={discount}
-              onChange={(e) => setDiscount(Number(e.target.value))}
-            />
-          </div>
-          <div>
-            <label className={label}>Pago</label>
-            <select
-              className={input}
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-            >
-              <option value="cash">Efectivo</option>
-              <option value="card">Tarjeta</option>
-              <option value="transfer">Transferencia</option>
-              <option value="yape">Yape</option>
-              <option value="plin">Plin</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="rounded-lg bg-slate-50 p-4 text-sm">
-          <div className="flex justify-between">
-            <span className="text-slate-600">Subtotal</span>
-            <span>{formatCurrency(subtotal)}</span>
-          </div>
-          {exonerado > 0 && (
-            <div className="flex justify-between text-slate-600">
-              <span>Exonerado</span>
-              <span>{formatCurrency(exonerado)}</span>
+              <div className="space-y-1.5">
+                <Label>Tipo</Label>
+                <select
+                  className={selectClass}
+                  value={invoiceType}
+                  onChange={(e) => setInvoiceType(e.target.value as any)}
+                >
+                  <option value="boleta">Boleta</option>
+                  <option value="factura">Factura</option>
+                </select>
+              </div>
             </div>
-          )}
-          {inafecto > 0 && (
-            <div className="flex justify-between text-slate-600">
-              <span>Inafecto</span>
-              <span>{formatCurrency(inafecto)}</span>
+
+            <section>
+              <div className="mb-2 flex items-center justify-between">
+                <h2 className="text-sm font-semibold uppercase text-muted-foreground">Items</h2>
+                <div className="flex gap-2">
+                  <select
+                    className="h-9 rounded-md border border-input bg-card px-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        addServiceAsItem(e.target.value)
+                        e.target.value = ''
+                      }
+                    }}
+                  >
+                    <option value="">+ Desde catálogo</option>
+                    {services.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name} · {formatCurrency(Number(s.price))}
+                      </option>
+                    ))}
+                  </select>
+                  <Button type="button" variant="outline" size="sm" onClick={addBlankItem}>
+                    + Libre
+                  </Button>
+                </div>
+              </div>
+
+              {items.length === 0 && (
+                <p className="rounded-md border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
+                  Añade items desde el catálogo o manualmente.
+                </p>
+              )}
+
+              <div className="space-y-2">
+                {items.map((it, idx) => (
+                  <div key={idx} className="grid grid-cols-[1fr_70px_100px_120px_100px_40px] items-center gap-2">
+                    <Input
+                      placeholder="Descripción"
+                      value={it.description}
+                      onChange={(e) => updateItem(idx, { description: e.target.value })}
+                    />
+                    <Input
+                      type="number"
+                      min="1"
+                      value={it.quantity}
+                      onChange={(e) => updateItem(idx, { quantity: Number(e.target.value) })}
+                    />
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={it.unitPrice}
+                      onChange={(e) => updateItem(idx, { unitPrice: Number(e.target.value) })}
+                    />
+                    <select
+                      className={selectClass}
+                      value={it.afectacionIgv}
+                      onChange={(e) => updateItem(idx, { afectacionIgv: e.target.value as AfectacionIgv })}
+                    >
+                      {AFECTACION_OPCIONES.map((o) => (
+                        <option key={o.value} value={o.value}>
+                          {o.label}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="text-right text-sm font-medium text-foreground">
+                      {formatCurrency(it.quantity * it.unitPrice)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeItem(idx)}
+                      className="text-muted-foreground transition-colors hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-1.5">
+                <Label>IGV %</Label>
+                <Input
+                  type="number"
+                  value={taxRate}
+                  onChange={(e) => setTaxRate(Number(e.target.value))}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Descuento</Label>
+                <Input
+                  type="number"
+                  value={discount}
+                  onChange={(e) => setDiscount(Number(e.target.value))}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Pago</Label>
+                <select
+                  className={selectClass}
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                >
+                  <option value="cash">Efectivo</option>
+                  <option value="card">Tarjeta</option>
+                  <option value="transfer">Transferencia</option>
+                  <option value="yape">Yape</option>
+                  <option value="plin">Plin</option>
+                </select>
+              </div>
             </div>
-          )}
-          <div className="flex justify-between text-slate-600">
-            <span>IGV ({taxRate}%)</span>
-            <span>{formatCurrency(taxAmount)}</span>
-          </div>
-          <div className="mt-2 flex justify-between border-t border-slate-200 pt-2 text-lg font-semibold text-slate-800">
-            <span>Total</span>
-            <span>{formatCurrency(total)}</span>
-          </div>
-        </div>
 
-        {error && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
+            <div className="rounded-md bg-muted p-4 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span>{formatCurrency(subtotal)}</span>
+              </div>
+              {exonerado > 0 && (
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Exonerado</span>
+                  <span>{formatCurrency(exonerado)}</span>
+                </div>
+              )}
+              {inafecto > 0 && (
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Inafecto</span>
+                  <span>{formatCurrency(inafecto)}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-muted-foreground">
+                <span>IGV ({taxRate}%)</span>
+                <span>{formatCurrency(taxAmount)}</span>
+              </div>
+              <div className="mt-2 flex justify-between border-t border-border pt-2 text-lg font-semibold text-foreground">
+                <span>Total</span>
+                <span>{formatCurrency(total)}</span>
+              </div>
+            </div>
 
-        <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700"
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            disabled={saving}
-            className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
-          >
-            {saving ? 'Guardando…' : 'Emitir comprobante'}
-          </button>
-        </div>
-      </form>
+            {error && (
+              <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+                {error}
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => router.back()}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={saving}>
+                {saving ? 'Guardando…' : 'Emitir comprobante'}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   )
 }

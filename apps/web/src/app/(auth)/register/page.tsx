@@ -7,6 +7,10 @@ import { COUNTRY_CONFIG, type CountryCode } from '@jampika/shared'
 import { api } from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
 import { PROFESSION_LIST, type ProfessionType } from '@/lib/professions'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 const COUNTRIES = Object.entries(COUNTRY_CONFIG) as [CountryCode, { name: string }][]
 
@@ -80,49 +84,48 @@ export default function RegisterPage() {
     }
   }
 
-  const inputClass =
-    'w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+  const selectClass =
+    'flex h-10 w-full rounded-md border border-input bg-card px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50'
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 via-white to-primary-50 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-muted p-4">
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-600 text-2xl font-bold text-white shadow-lg shadow-primary-600/30">
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-2xl font-bold text-primary-foreground shadow-lg shadow-primary/30">
             J
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Jampika</h1>
-          <p className="mt-1 text-sm text-slate-500">Gestión para profesionales de salud y bienestar</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Jampika</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Gestión para profesionales de salud y bienestar</p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xl">
-          <h2 className="mb-1 text-lg font-semibold text-slate-900">Crea tu clínica</h2>
-          <p className="mb-6 text-sm text-slate-500">
+        <Card className="p-8">
+          <h2 className="mb-1 text-lg font-semibold text-foreground">Crea tu clínica</h2>
+          <p className="mb-6 text-sm text-muted-foreground">
             Registra tu clínica y crea la cuenta del administrador.
           </p>
 
           <form onSubmit={onSubmit} className="space-y-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
-                Nombre de la clínica
-              </label>
-              <input
+            <div className="space-y-1.5">
+              <Label htmlFor="clinicName">Nombre de la clínica</Label>
+              <Input
+                id="clinicName"
                 type="text"
                 required
                 minLength={2}
                 value={clinicName}
                 onChange={(e) => onClinicNameChange(e.target.value)}
                 placeholder="Clínica San Rafael"
-                className={inputClass}
               />
             </div>
 
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Tipo de profesional</label>
+            <div className="space-y-1.5">
+              <Label htmlFor="professionType">Tipo de profesional</Label>
               <select
+                id="professionType"
                 required
                 value={professionType}
                 onChange={(e) => setProfessionType(e.target.value as ProfessionType)}
-                className={inputClass}
+                className={selectClass}
               >
                 {PROFESSION_LIST.map((p) => (
                   <option key={p.key} value={p.key}>
@@ -130,14 +133,13 @@ export default function RegisterPage() {
                   </option>
                 ))}
               </select>
-              <p className="mt-1 text-xs text-slate-400">Activa los módulos y la terminología adecuados a tu práctica.</p>
+              <p className="text-xs text-muted-foreground">Activa los módulos y la terminología adecuados a tu práctica.</p>
             </div>
 
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
-                Identificador (URL)
-              </label>
-              <input
+            <div className="space-y-1.5">
+              <Label htmlFor="slug">Identificador (URL)</Label>
+              <Input
+                id="slug"
                 type="text"
                 required
                 minLength={3}
@@ -149,18 +151,18 @@ export default function RegisterPage() {
                   setSlug(slugify(e.target.value))
                 }}
                 placeholder="clinica-san-rafael"
-                className={inputClass}
               />
-              <p className="mt-1 text-xs text-slate-400">Se usa para identificar tu clínica. Solo minúsculas, números y guiones.</p>
+              <p className="text-xs text-muted-foreground">Se usa para identificar tu clínica. Solo minúsculas, números y guiones.</p>
             </div>
 
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">País</label>
+            <div className="space-y-1.5">
+              <Label htmlFor="country">País</Label>
               <select
+                id="country"
                 required
                 value={country}
                 onChange={(e) => setCountry(e.target.value as CountryCode)}
-                className={inputClass}
+                className={selectClass}
               >
                 {COUNTRIES.map(([code, cfg]) => (
                   <option key={code} value={code}>
@@ -171,74 +173,70 @@ export default function RegisterPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Nombre</label>
-                <input
+              <div className="space-y-1.5">
+                <Label htmlFor="adminFirstName">Nombre</Label>
+                <Input
+                  id="adminFirstName"
                   type="text"
                   required
                   value={adminFirstName}
                   onChange={(e) => setAdminFirstName(e.target.value)}
-                  className={inputClass}
                 />
               </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Apellido</label>
-                <input
+              <div className="space-y-1.5">
+                <Label htmlFor="adminLastName">Apellido</Label>
+                <Input
+                  id="adminLastName"
                   type="text"
                   required
                   value={adminLastName}
                   onChange={(e) => setAdminLastName(e.target.value)}
-                  className={inputClass}
                 />
               </div>
             </div>
 
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Correo</label>
-              <input
+            <div className="space-y-1.5">
+              <Label htmlFor="adminEmail">Correo</Label>
+              <Input
+                id="adminEmail"
                 type="email"
                 required
                 value={adminEmail}
                 onChange={(e) => setAdminEmail(e.target.value)}
-                className={inputClass}
               />
             </div>
 
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Contraseña</label>
-              <input
+            <div className="space-y-1.5">
+              <Label htmlFor="adminPassword">Contraseña</Label>
+              <Input
+                id="adminPassword"
                 type="password"
                 required
                 minLength={8}
                 value={adminPassword}
                 onChange={(e) => setAdminPassword(e.target.value)}
-                className={inputClass}
               />
-              <p className="mt-1 text-xs text-slate-400">Mínimo 8 caracteres.</p>
+              <p className="text-xs text-muted-foreground">Mínimo 8 caracteres.</p>
             </div>
 
             {error && (
-              <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
                 {error}
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-lg bg-primary-600 py-2.5 font-medium text-white transition hover:bg-primary-700 disabled:opacity-50"
-            >
+            <Button type="submit" disabled={loading} className="w-full">
               {loading ? 'Creando clínica…' : 'Crear clínica'}
-            </button>
+            </Button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-slate-600">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
             ¿Ya tienes una cuenta?{' '}
-            <Link href="/login" className="font-medium text-primary-600 hover:text-primary-700">
+            <Link href="/login" className="font-medium text-primary hover:text-primary/80">
               Inicia sesión
             </Link>
           </p>
-        </div>
+        </Card>
       </div>
     </div>
   )

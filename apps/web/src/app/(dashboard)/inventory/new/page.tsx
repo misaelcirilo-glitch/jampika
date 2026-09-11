@@ -3,6 +3,10 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { api } from '@/lib/api'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 export default function NewInventoryItemPage() {
   const router = useRouter()
@@ -42,151 +46,136 @@ export default function NewInventoryItemPage() {
     }
   }
 
-  const input = 'w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
-  const label = 'mb-1 block text-sm font-medium text-slate-700'
+  const selectClass =
+    'flex h-10 w-full rounded-md border border-input bg-card px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50'
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="mb-6 text-2xl font-semibold text-slate-800">Nuevo item de inventario</h1>
-      <form onSubmit={onSubmit} className="space-y-4 rounded-xl bg-white p-6 shadow-sm">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="col-span-2">
-            <label className={label}>Nombre</label>
-            <input
-              className={input}
-              required
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className={label}>Nombre genérico</label>
-            <input
-              className={input}
-              value={form.genericName}
-              onChange={(e) => setForm({ ...form, genericName: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className={label}>Categoría</label>
-            <select
-              className={input}
-              value={form.category}
-              onChange={(e) => setForm({ ...form, category: e.target.value })}
-            >
-              <option value="medication">Medicamento</option>
-              <option value="supply">Insumo</option>
-              <option value="equipment">Equipo</option>
-            </select>
-          </div>
-          <div>
-            <label className={label}>SKU</label>
-            <input
-              className={input}
-              value={form.sku}
-              onChange={(e) => setForm({ ...form, sku: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className={label}>Unidad</label>
-            <input
-              className={input}
-              value={form.unit}
-              onChange={(e) => setForm({ ...form, unit: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className={label}>Stock inicial</label>
-            <input
-              type="number"
-              min="0"
-              className={input}
-              value={form.currentStock}
-              onChange={(e) => setForm({ ...form, currentStock: Number(e.target.value) })}
-            />
-          </div>
-          <div>
-            <label className={label}>Stock mínimo</label>
-            <input
-              type="number"
-              min="0"
-              className={input}
-              value={form.minStock}
-              onChange={(e) => setForm({ ...form, minStock: Number(e.target.value) })}
-            />
-          </div>
-          <div>
-            <label className={label}>Precio compra</label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              className={input}
-              value={form.purchasePrice}
-              onChange={(e) => setForm({ ...form, purchasePrice: Number(e.target.value) })}
-            />
-          </div>
-          <div>
-            <label className={label}>Precio venta</label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              className={input}
-              value={form.salePrice}
-              onChange={(e) => setForm({ ...form, salePrice: Number(e.target.value) })}
-            />
-          </div>
-          <div>
-            <label className={label}>Vencimiento</label>
-            <input
-              type="date"
-              className={input}
-              value={form.expirationDate}
-              onChange={(e) => setForm({ ...form, expirationDate: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className={label}>Proveedor</label>
-            <input
-              className={input}
-              value={form.supplier}
-              onChange={(e) => setForm({ ...form, supplier: e.target.value })}
-            />
-          </div>
-          <div className="col-span-2">
-            <label className={label}>Ubicación</label>
-            <input
-              className={input}
-              value={form.location}
-              onChange={(e) => setForm({ ...form, location: e.target.value })}
-            />
-          </div>
-        </div>
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Nuevo item de inventario</h1>
+      <Card>
+        <CardContent className="p-6">
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2 space-y-1.5">
+                <Label>Nombre</Label>
+                <Input
+                  required
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Nombre genérico</Label>
+                <Input
+                  value={form.genericName}
+                  onChange={(e) => setForm({ ...form, genericName: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Categoría</Label>
+                <select
+                  className={selectClass}
+                  value={form.category}
+                  onChange={(e) => setForm({ ...form, category: e.target.value })}
+                >
+                  <option value="medication">Medicamento</option>
+                  <option value="supply">Insumo</option>
+                  <option value="equipment">Equipo</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>SKU</Label>
+                <Input
+                  value={form.sku}
+                  onChange={(e) => setForm({ ...form, sku: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Unidad</Label>
+                <Input
+                  value={form.unit}
+                  onChange={(e) => setForm({ ...form, unit: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Stock inicial</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={form.currentStock}
+                  onChange={(e) => setForm({ ...form, currentStock: Number(e.target.value) })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Stock mínimo</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={form.minStock}
+                  onChange={(e) => setForm({ ...form, minStock: Number(e.target.value) })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Precio compra</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.purchasePrice}
+                  onChange={(e) => setForm({ ...form, purchasePrice: Number(e.target.value) })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Precio venta</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.salePrice}
+                  onChange={(e) => setForm({ ...form, salePrice: Number(e.target.value) })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Vencimiento</Label>
+                <Input
+                  type="date"
+                  value={form.expirationDate}
+                  onChange={(e) => setForm({ ...form, expirationDate: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Proveedor</Label>
+                <Input
+                  value={form.supplier}
+                  onChange={(e) => setForm({ ...form, supplier: e.target.value })}
+                />
+              </div>
+              <div className="col-span-2 space-y-1.5">
+                <Label>Ubicación</Label>
+                <Input
+                  value={form.location}
+                  onChange={(e) => setForm({ ...form, location: e.target.value })}
+                />
+              </div>
+            </div>
 
-        {error && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
+            {error && (
+              <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+                {error}
+              </div>
+            )}
 
-        <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700"
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            disabled={saving}
-            className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
-          >
-            {saving ? 'Guardando…' : 'Guardar'}
-          </button>
-        </div>
-      </form>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => router.back()}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={saving}>
+                {saving ? 'Guardando…' : 'Guardar'}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   )
 }

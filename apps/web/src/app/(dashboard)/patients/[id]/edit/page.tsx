@@ -24,7 +24,7 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
     })
   }, [id])
 
-  if (!initial) return <p className="text-slate-500">Cargando…</p>
+  if (!initial) return <p className="text-muted-foreground">Cargando…</p>
 
   async function handleSubmit(values: PatientFormValues) {
     await updatePatient(id, {
@@ -51,7 +51,7 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="mb-6 text-2xl font-semibold text-slate-800">Editar paciente</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Editar paciente</h1>
       <PatientForm
         initial={initial}
         onSubmit={handleSubmit}

@@ -19,6 +19,9 @@ import {
 } from '@/features/subscription/subscription.service'
 import { planLabel, professionalsLabel } from '@/features/subscription/plans'
 import { useAuthStore } from '@/stores/authStore'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 
 function formatDate(iso: string | null): string {
   if (!iso) return '—'
@@ -29,10 +32,10 @@ function formatDate(iso: string | null): string {
   })
 }
 
-const TONE_CLASSES: Record<'ok' | 'warn' | 'bad', string> = {
-  ok: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  warn: 'bg-amber-50 text-amber-700 border-amber-200',
-  bad: 'bg-red-50 text-red-700 border-red-200',
+const TONE_VARIANTS: Record<'ok' | 'warn' | 'bad', 'success' | 'warning' | 'destructive'> = {
+  ok: 'success',
+  warn: 'warning',
+  bad: 'destructive',
 }
 
 export function SubscriptionTab() {
@@ -77,16 +80,16 @@ export function SubscriptionTab() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 rounded-2xl bg-white p-6 text-sm text-slate-500 shadow-sm border border-slate-100">
-        <Loader2 className="h-4 w-4 animate-spin text-slate-400" /> Cargando suscripción…
-      </div>
+      <Card className="flex items-center gap-2 p-6 text-sm text-muted-foreground">
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> Cargando suscripción…
+      </Card>
     )
   }
 
   if (error) {
     return (
       <div className="max-w-xl space-y-4">
-        <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>{error}</span>
         </div>
@@ -97,22 +100,21 @@ export function SubscriptionTab() {
   // Estado vacío: nunca se suscribió.
   if (!subscription) {
     return (
-      <div className="max-w-xl space-y-5 rounded-2xl bg-white p-6 shadow-sm border border-slate-100">
+      <Card className="max-w-xl space-y-5 p-6">
         <div className="flex items-center gap-2">
-          <CreditCard className="h-5 w-5 text-blue-600" />
-          <h2 className="text-sm font-bold text-slate-700">Suscripción</h2>
+          <CreditCard className="h-5 w-5 text-primary" />
+          <h2 className="text-sm font-bold text-foreground">Suscripción</h2>
         </div>
-        <p className="text-sm text-slate-500">Aún no tienes una suscripción activa.</p>
-        <Link
-          href="/planes"
-          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors"
-        >
-          <Sparkles className="h-4 w-4" /> Ver planes
-        </Link>
-        <p className="flex items-center gap-1.5 text-xs text-slate-400">
+        <p className="text-sm text-muted-foreground">Aún no tienes una suscripción activa.</p>
+        <Button asChild>
+          <Link href="/planes">
+            <Sparkles className="h-4 w-4" /> Ver planes
+          </Link>
+        </Button>
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Wifi className="h-3.5 w-3.5" /> La gestión de la suscripción requiere conexión a internet.
         </p>
-      </div>
+      </Card>
     )
   }
 
@@ -121,33 +123,31 @@ export function SubscriptionTab() {
   const isTrial = subscription.status === 'trialing'
 
   return (
-    <div className="max-w-xl space-y-5 rounded-2xl bg-white p-6 shadow-sm border border-slate-100">
+    <Card className="max-w-xl space-y-5 p-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <CreditCard className="h-5 w-5 text-blue-600" />
-          <h2 className="text-sm font-bold text-slate-700">Suscripción</h2>
+          <CreditCard className="h-5 w-5 text-primary" />
+          <h2 className="text-sm font-bold text-foreground">Suscripción</h2>
         </div>
-        <span
-          className={`rounded-full border px-3 py-1 text-xs font-semibold ${TONE_CLASSES[badge.tone]}`}
-        >
+        <Badge variant={TONE_VARIANTS[badge.tone]} className="rounded-full px-3 py-1">
           {badge.text}
-        </span>
+        </Badge>
       </div>
 
       {/* Plan y periodo */}
       <div className="space-y-1">
-        <div className="text-2xl font-bold text-slate-800">
+        <div className="text-2xl font-bold text-foreground">
           {planLabel(subscription.plan)}
-          <span className="ml-2 align-middle text-sm font-medium text-slate-400">{periodLabel}</span>
+          <span className="ml-2 align-middle text-sm font-medium text-muted-foreground">{periodLabel}</span>
         </div>
-        <p className="flex items-center gap-1.5 text-sm text-slate-500">
-          <Users className="h-4 w-4 text-slate-400" />
+        <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <Users className="h-4 w-4 text-muted-foreground" />
           {professionalsLabel(subscription.maxProfessionals)}
         </p>
       </div>
 
       {/* Fechas */}
-      <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+      <div className="rounded-xl border border-border bg-muted px-4 py-3 text-sm text-foreground">
         {isTrial && subscription.trialEndsAt ? (
           <span>Prueba gratis hasta el {formatDate(subscription.trialEndsAt)}</span>
         ) : (
@@ -157,7 +157,7 @@ export function SubscriptionTab() {
 
       {/* Aviso de cancelación programada */}
       {subscription.cancelAtPeriodEnd && (
-        <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+        <div className="flex items-start gap-2 rounded-xl border border-warning/30 bg-warning/15 px-4 py-3 text-sm text-warning-foreground">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>Tu suscripción se cancelará al final del periodo.</span>
         </div>
@@ -165,11 +165,7 @@ export function SubscriptionTab() {
 
       {/* Acción: gestionar (solo admin) */}
       {isAdmin ? (
-        <button
-          onClick={handlePortal}
-          disabled={redirecting}
-          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors disabled:opacity-50"
-        >
+        <Button onClick={handlePortal} disabled={redirecting}>
           {redirecting ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" /> Abriendo…
@@ -179,16 +175,16 @@ export function SubscriptionTab() {
               <ExternalLink className="h-4 w-4" /> Gestionar suscripción
             </>
           )}
-        </button>
+        </Button>
       ) : (
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-muted-foreground">
           Solo el administrador puede gestionar la suscripción.
         </p>
       )}
 
-      <p className="flex items-center gap-1.5 text-xs text-slate-400">
+      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Wifi className="h-3.5 w-3.5" /> La gestión de la suscripción requiere conexión a internet.
       </p>
-    </div>
+    </Card>
   )
 }
