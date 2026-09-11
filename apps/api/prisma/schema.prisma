@@ -45,8 +45,41 @@ model Clinic {
   syncLogs           SyncLog[]
   comprobanteSeries  ComprobanteSerie[]
   patientFiles       PatientFile[]
+  subscription       Subscription?
 
   @@map("clinics")
+}
+
+// ============================================================
+// SUSCRIPCIÓN DE PLATAFORMA (PRP-012). La clínica paga por usar Jampika.
+// Precio por clínica, USD, 3 planes por tamaño. Se resuelve por lookup_key.
+// ============================================================
+model Subscription {
+  id                   String    @id @default(uuid()) @db.Uuid
+  clinicId             String    @unique @map("clinic_id") @db.Uuid
+  stripeCustomerId     String    @map("stripe_customer_id")
+  stripeSubscriptionId String    @unique @map("stripe_subscription_id")
+  plan                 String // consultorio | clinica | institucion
+  billingPeriod        String    @map("billing_period") // monthly | yearly
+  status               String // trialing | active | past_due | paused | canceled | unpaid | incomplete…
+  maxProfessionals     Int?      @map("max_professionals") // NULL = ilimitado
+  currentPeriodEnd     DateTime? @map("current_period_end")
+  trialEndsAt          DateTime? @map("trial_ends_at")
+  cancelAtPeriodEnd    Boolean   @default(false) @map("cancel_at_period_end")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+// Idempotencia de webhooks: cada event.id de Stripe se registra una sola vez.
+model StripeEvent {
+  eventId     String   @id @map("event_id")
+  processedAt DateTime @default(now()) @map("processed_at")
+
+  @@map("stripe_events")
 }
 
 // ============================================================

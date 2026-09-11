@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { prisma } from '../../config/database.js'
 import { authMiddleware, requireRole } from '../../middleware/auth.js'
+import { assertCanAddProfessional, PlanLimitError } from '../subscription/gate.js'
 
 const router = Router()
 router.use(authMiddleware)
@@ -95,6 +96,10 @@ router.post('/users', requireRole('admin'), async (req, res, next) => {
     if (!body.password) {
       return res.status(400).json({ error: 'La contraseña es obligatoria para un nuevo usuario' })
     }
+    // Gate del plan: bloquea si añadir un profesional (doctor/nurse) supera el cupo.
+    if (body.role === 'doctor' || body.role === 'nurse') {
+      await assertCanAddProfessional(req.auth!.clinicId)
+    }
     const passwordHash = await bcrypt.hash(body.password, 10)
     const user = await prisma.user.create({
       data: {
@@ -123,6 +128,7 @@ router.post('/users', requireRole('admin'), async (req, res, next) => {
     })
     res.status(201).json(user)
   } catch (e) {
+    if (e instanceof PlanLimitError) return res.status(e.status).json({ error: e.message })
     next(e)
   }
 })
