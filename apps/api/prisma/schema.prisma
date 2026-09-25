@@ -524,3 +524,141 @@ model QuestionnaireAssignment {
   @@index([clinicId, patientId, createdAt])
   @@map("questionnaire_assignments")
 }
+
+// ============================================================
+// RDA COLOMBIA (Registro Digital de Atención, FHIR R4 Minsalud — STU1 borrador)
+// Tablas aisladas 1:1 con clinics/users/patients/medical_records. Scalar-only
+// (FKs en SQL) para no acoplar el core: si los perfiles cambian, solo cambia esto.
+// Módulo: apps/api/src/modules/rda-co/
+// ============================================================
+enum CoTipoDocumento {
+  CC
+  CE
+  CD
+  PA
+  SC
+  PE
+  PT
+  RC
+  TI
+  CN
+  AS
+  MS
+  DE
+  SI
+
+  @@map("co_tipo_documento")
+}
+
+enum CoSexo {
+  H
+  M
+  I
+
+  @@map("co_sexo")
+}
+
+enum CoZonaResidencia {
+  U
+  R
+
+  @@map("co_zona_residencia")
+}
+
+enum CoTipoCobertura {
+  contributivo
+  subsidiado
+  especial
+  excepcion
+  prepagada
+  soat
+  particular
+  otro
+
+  @@map("co_tipo_cobertura")
+}
+
+enum CoModalidadAtencion {
+  intramural
+  extramural
+  telemedicina
+
+  @@map("co_modalidad_atencion")
+}
+
+model RdaIpsCo {
+  clinicId           String   @id @map("clinic_id") @db.Uuid
+  codigoHabilitacion String   @map("codigo_habilitacion") @db.VarChar(12)
+  nit                String   @db.VarChar(15)
+  digitoVerificacion String?  @map("digito_verificacion") @db.VarChar(1)
+  razonSocial        String   @map("razon_social")
+  municipioDivipola  String?  @map("municipio_divipola") @db.VarChar(5)
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("rda_ips_co")
+}
+
+model RdaProfesionalCo {
+  userId              String          @id @map("user_id") @db.Uuid
+  clinicId            String          @map("clinic_id") @db.Uuid
+  tipoDocumento       CoTipoDocumento @map("tipo_documento")
+  numeroDocumento     String          @map("numero_documento") @db.VarChar(20)
+  especialidadCodigo  String?         @map("especialidad_codigo") @db.VarChar(10)
+  especialidadNombre  String?         @map("especialidad_nombre")
+  registroProfesional String?         @map("registro_profesional") @db.VarChar(30)
+  createdAt           DateTime        @default(now()) @map("created_at")
+  updatedAt           DateTime        @default(now()) @updatedAt @map("updated_at")
+
+  @@index([clinicId])
+  @@map("rda_profesionales_co")
+}
+
+model RdaPacienteCo {
+  patientId            String            @id @map("patient_id") @db.Uuid
+  clinicId             String            @map("clinic_id") @db.Uuid
+  tipoDocumento        CoTipoDocumento   @map("tipo_documento")
+  numeroDocumento      String            @map("numero_documento") @db.VarChar(20)
+  primerNombre         String?           @map("primer_nombre")
+  segundoNombre        String?           @map("segundo_nombre")
+  primerApellido       String?           @map("primer_apellido")
+  segundoApellido      String?           @map("segundo_apellido")
+  sexo                 CoSexo?
+  paisNacionalidad     String?           @default("170") @map("pais_nacionalidad") @db.VarChar(3)
+  municipioDivipola    String?           @map("municipio_divipola") @db.VarChar(5)
+  zonaResidencia       CoZonaResidencia? @map("zona_residencia")
+  ocupacionCiuo        String?           @map("ocupacion_ciuo") @db.VarChar(4)
+  ocupacionDescripcion String?           @map("ocupacion_descripcion")
+  tipoCobertura        CoTipoCobertura   @default(particular) @map("tipo_cobertura")
+  epsCodigo            String?           @map("eps_codigo") @db.VarChar(10)
+  epsNombre            String?           @map("eps_nombre")
+  numeroAfiliacion     String?           @map("numero_afiliacion") @db.VarChar(30)
+  createdAt            DateTime          @default(now()) @map("created_at")
+  updatedAt            DateTime          @default(now()) @updatedAt @map("updated_at")
+
+  @@index([clinicId])
+  @@map("rda_pacientes_co")
+}
+
+model RdaConsultaCo {
+  medicalRecordId  String              @id @map("medical_record_id") @db.Uuid
+  clinicId         String              @map("clinic_id") @db.Uuid
+  patientId        String              @map("patient_id") @db.Uuid
+  modalidad        CoModalidadAtencion @default(intramural)
+  finalidad        String?             @db.VarChar(2)
+  causaExterna     String?             @map("causa_externa") @db.VarChar(2)
+  tipoCobertura    CoTipoCobertura     @default(particular) @map("tipo_cobertura")
+  epsCodigo        String?             @map("eps_codigo") @db.VarChar(10)
+  epsNombre        String?             @map("eps_nombre")
+  numeroAfiliacion String?             @map("numero_afiliacion") @db.VarChar(30)
+  diagnosticos     Json                @default("[]")
+  procedimientos   Json                @default("[]")
+  medicamentos     Json                @default("[]")
+  alergias         Json                @default("[]")
+  factoresRiesgo   Json                @default("[]") @map("factores_riesgo")
+  incapacidad      Json?
+  createdAt        DateTime            @default(now()) @map("created_at")
+
+  @@index([clinicId, patientId])
+  @@map("rda_consultas_co")
+}

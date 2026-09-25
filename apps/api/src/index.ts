@@ -26,6 +26,7 @@ import questionnairesRoutes from './modules/questionnaires/questionnaires.routes
 import publicQuestionnaireRoutes from './modules/questionnaires/public.routes.js'
 import subscriptionRoutes from './modules/subscription/subscription.routes.js'
 import { stripeWebhookHandler } from './modules/subscription/webhook.js'
+import rdaCoRoutes from './modules/rda-co/rda.routes.js'
 
 const app = express()
 
@@ -81,6 +82,7 @@ app.use('/api/v1/public/video', publicVideoRoutes) // videoconsulta pública (to
 app.use('/api/v1/questionnaires', questionnairesRoutes) // cuestionarios/tareas (auth + módulo)
 app.use('/api/v1/public/questionnaire', publicQuestionnaireRoutes) // responder (público, token)
 app.use('/api/v1/stripe', subscriptionRoutes) // suscripción de plataforma (auth; el webhook va arriba)
+app.use('/api/v1/rda-co', rdaCoRoutes) // RDA Colombia: Bundle FHIR local (sin envío a Minsalud)
 
 app.use(errorHandler)
 
