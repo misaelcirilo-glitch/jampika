@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
+  Brain,
   Calendar,
   FileText,
   LayoutDashboard,
@@ -22,9 +23,10 @@ import { getProfession, hasModule } from '@/lib/professions'
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { clinic, logout } = useAuthStore()
+  const { user, clinic, logout } = useAuthStore()
 
   const prof = getProfession(clinic?.professionType)
+  const puedeVerConsultora = user?.role === 'admin' || user?.role === 'doctor'
   const MAIN_NAV = [
     { href: '/dashboard', label: 'Inicio', icon: LayoutDashboard },
     { href: '/patients', label: prof.patients, icon: Users },
@@ -33,6 +35,7 @@ export function Sidebar() {
     { href: '/billing', label: 'Facturación', icon: Receipt },
     ...(hasModule(clinic, 'inventario') ? [{ href: '/inventory', label: 'Inventario', icon: Package }] : []),
     ...(hasModule(clinic, 'chat') ? [{ href: '/chat', label: 'WhatsApp', icon: MessageCircle }] : []),
+    ...(puedeVerConsultora ? [{ href: '/consultora', label: 'Consultora Senior', icon: Brain }] : []),
   ]
 
   return (

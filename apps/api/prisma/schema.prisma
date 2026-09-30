@@ -526,6 +526,23 @@ model QuestionnaireAssignment {
 }
 
 // ============================================================
+// CONSULTORA SENIOR: chat de consultoría de gestión clínica (Lean Healthcare,
+// Balanced Scorecard, Patient Journey, Value-Based Care...). Historial por
+// clínica+usuario. Scalar-only (FKs en SQL) para no acoplar el core.
+// ============================================================
+model ConsultoraMensaje {
+  id        String   @id @default(uuid()) @db.Uuid
+  clinicId  String   @map("clinic_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  rol       String // user | assistant
+  contenido String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([clinicId, userId, createdAt])
+  @@map("consultora_mensajes")
+}
+
+// ============================================================
 // RDA COLOMBIA (Registro Digital de Atención, FHIR R4 Minsalud — STU1 borrador)
 // Tablas aisladas 1:1 con clinics/users/patients/medical_records. Scalar-only
 // (FKs en SQL) para no acoplar el core: si los perfiles cambian, solo cambia esto.

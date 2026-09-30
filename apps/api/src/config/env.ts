@@ -15,6 +15,7 @@ const schema = z.object({
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
   APP_URL: z.string().url().optional(), // base para success/cancel del checkout
+  OPENROUTER_API_KEY: z.string().optional(), // Consultora Senior (sin key: fallback por reglas)
 })
 
 const parsed = schema.safeParse(process.env)
