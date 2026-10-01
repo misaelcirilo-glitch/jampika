@@ -64,20 +64,14 @@ export const CONSULTORA_MARCOS_CITABLES = [
   'Neuromarketing',
 ]
 
-interface DatosClinica {
+export interface DatosClinica {
   nombre: string
   pais: string
   plan: string
   tipoProfesion?: string
   equipoTotal: number
-  pacientesActivos: number
-  citasHoy: number
-  citasSemana: number
-  tasaNoShowPct: number | null
-  ingresosMes30d: number
-  moneda: string
-  facturasPendientes: number
-  insumosBajoStock: number
+  // Vista de los KPIs del mes en curso: mismos números que la página de Indicadores.
+  kpis: unknown
 }
 
 export function construirSystemPrompt(datos: DatosClinica): string {
@@ -101,17 +95,14 @@ DATOS ACTUALES DE LA CLÍNICA QUE ESTÁS ASESORANDO:
 - Plan de suscripción en Jampika: ${datos.plan}
 - Tipo de profesión/especialidad: ${datos.tipoProfesion || 'general'}
 - Tamaño de equipo: ${datos.equipoTotal} persona(s)
-- Pacientes activos: ${datos.pacientesActivos}
-- Citas agendadas hoy: ${datos.citasHoy}
-- Citas agendadas esta semana: ${datos.citasSemana}
-- Tasa de no-show (últimos 30 días): ${datos.tasaNoShowPct !== null ? `${datos.tasaNoShowPct.toFixed(1)}%` : 'sin datos suficientes'}
-- Ingresos cobrados (últimos 30 días): ${datos.ingresosMes30d.toFixed(2)} ${datos.moneda}
-- Facturas/comprobantes pendientes de cobro: ${datos.facturasPendientes}
-- Insumos con stock bajo el mínimo: ${datos.insumosBajoStock}
+
+INDICADORES DEL MES EN CURSO (JSON; son exactamente los números que el usuario ve en la página "Indicadores"):
+${JSON.stringify(datos.kpis)}
 
 INSTRUCCIONES DE RESPUESTA:
-1. Usa los datos de arriba para contextualizar tu respuesta cuando sea relevante para la pregunta.
-2. Si detectas una señal de alerta en los datos (no-show alto, stock bajo, facturas pendientes acumuladas), menciónala proactivamente aunque no te la pregunten directamente.
+1. Usa los indicadores de arriba para contextualizar tu respuesta. NUNCA inventes cifras: cita los números exactos del JSON.
+2. Si un indicador está en "ámbar" o "rojo", menciónalo proactivamente aunque no te lo pregunten, con este formato: el número, su referencia, a quién pedírselo (responsable) y qué hacer (accion). Ejemplo: "Tu no-show este mes es del 12% (referencia <5%). Pídeselo a Recepción: confirmación por WhatsApp 24h antes y lista de espera."
+2b. Si un dato viene en null o con una "nota" (p. ej. horarios o costos sin configurar), dilo y explica dónde configurarlo en vez de suponer la cifra.
 3. Estructura respuestas largas con encabezados cortos o viñetas; sé concisa, no escribas ensayos.
 4. Si no tienes datos suficientes para responder algo con precisión, dilo claramente y sugiere qué deberían empezar a medir.
 5. Responde siempre en español.`

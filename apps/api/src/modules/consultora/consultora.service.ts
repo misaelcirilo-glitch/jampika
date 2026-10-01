@@ -1,93 +1,29 @@
 import { prisma } from '../../config/database.js'
 import { env } from '../../config/env.js'
-import { construirSystemPrompt } from './consultora.prompt.js'
+import { construirSystemPrompt, type DatosClinica } from './consultora.prompt.js'
+import { calcularSnapshotKpis } from '../kpis/kpis.service.js'
+import type { KpiSnapshot } from '../kpis/kpis.types.js'
+import { alertasKpi, vistaConsultora } from './consultora.vista.js'
 
-const CURRENCY_BY_COUNTRY: Record<string, string> = {
-  PE: 'PEN',
-  CO: 'COP',
-  EC: 'USD',
-  BO: 'BOB',
-  MX: 'MXN',
-  CL: 'CLP',
-}
-
-interface KpisClinica {
-  nombre: string
-  pais: string
-  plan: string
-  tipoProfesion?: string
-  equipoTotal: number
-  pacientesActivos: number
-  citasHoy: number
-  citasSemana: number
-  tasaNoShowPct: number | null
-  ingresosMes30d: number
-  moneda: string
-  facturasPendientes: number
-  insumosBajoStock: number
-}
-
-async function calcularKpis(clinicId: string): Promise<KpisClinica> {
-  const clinic = await prisma.clinic.findUniqueOrThrow({
-    where: { id: clinicId },
-    select: { name: true, country: true, plan: true, settings: true },
-  })
-  const settings = (clinic.settings ?? {}) as Record<string, unknown>
-
-  const startOfDay = new Date()
-  startOfDay.setHours(0, 0, 0, 0)
-  const endOfDay = new Date()
-  endOfDay.setHours(23, 59, 59, 999)
-  const startOfWeek = new Date(startOfDay)
-  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay())
-  const hace30d = new Date()
-  hace30d.setDate(hace30d.getDate() - 30)
-
-  const [
-    equipoTotal,
-    pacientesActivos,
-    citasHoy,
-    citasSemana,
-    citas30d,
-    noShow30d,
-    invoicesPagadas30d,
-    facturasPendientes,
-    insumosBajoStock,
-  ] = await Promise.all([
+// Contexto de la clínica para la consultora. Los KPIs salen del MISMO cálculo
+// que la página de Indicadores (kpis.service.ts): aquí no hay fórmulas.
+async function contextoClinica(clinicId: string): Promise<{ datos: DatosClinica; snapshot: KpiSnapshot }> {
+  const [clinic, equipoTotal, snapshot] = await Promise.all([
+    prisma.clinic.findUniqueOrThrow({ where: { id: clinicId }, select: { name: true, country: true, plan: true, settings: true } }),
     prisma.user.count({ where: { clinicId, isActive: true } }),
-    prisma.patient.count({ where: { clinicId, isActive: true } }),
-    prisma.appointment.count({ where: { clinicId, startTime: { gte: startOfDay, lte: endOfDay } } }),
-    prisma.appointment.count({ where: { clinicId, startTime: { gte: startOfWeek } } }),
-    prisma.appointment.count({ where: { clinicId, startTime: { gte: hace30d }, status: { not: 'scheduled' } } }),
-    prisma.appointment.count({ where: { clinicId, startTime: { gte: hace30d }, status: 'no_show' } }),
-    prisma.invoice.findMany({
-      where: { clinicId, status: 'paid', paidAt: { gte: hace30d } },
-      select: { total: true },
-    }),
-    prisma.invoice.count({ where: { clinicId, status: 'pending' } }),
-    prisma.$queryRaw<[{ count: bigint }]>`
-      SELECT COUNT(*)::bigint as count FROM inventory_items
-      WHERE clinic_id = ${clinicId}::uuid AND is_active = true AND current_stock <= min_stock
-    `,
+    calcularSnapshotKpis(clinicId, { periodo: 'mes' }),
   ])
-
-  const ingresosMes30d = invoicesPagadas30d.reduce((acc, i) => acc + Number(i.total), 0)
-  const tasaNoShowPct = citas30d > 0 ? (noShow30d / citas30d) * 100 : null
-
+  const settings = (clinic.settings ?? {}) as Record<string, unknown>
   return {
-    nombre: clinic.name,
-    pais: clinic.country,
-    plan: clinic.plan,
-    tipoProfesion: typeof settings.professionType === 'string' ? settings.professionType : undefined,
-    equipoTotal,
-    pacientesActivos,
-    citasHoy,
-    citasSemana,
-    tasaNoShowPct,
-    ingresosMes30d,
-    moneda: CURRENCY_BY_COUNTRY[clinic.country] ?? 'USD',
-    facturasPendientes,
-    insumosBajoStock: Number(insumosBajoStock[0]?.count ?? 0),
+    snapshot,
+    datos: {
+      nombre: clinic.name,
+      pais: clinic.country,
+      plan: clinic.plan,
+      tipoProfesion: typeof settings.professionType === 'string' ? settings.professionType : undefined,
+      equipoTotal,
+      kpis: vistaConsultora(snapshot),
+    },
   }
 }
 
@@ -104,8 +40,8 @@ export async function enviarMensaje(clinicId: string, userId: string, mensaje: s
     data: { clinicId, userId, rol: 'user', contenido: mensaje },
   })
 
-  const kpis = await calcularKpis(clinicId)
-  const systemPrompt = construirSystemPrompt(kpis)
+  const { datos, snapshot } = await contextoClinica(clinicId)
+  const systemPrompt = construirSystemPrompt(datos)
 
   const historial = await prisma.consultoraMensaje.findMany({
     where: { clinicId, userId },
@@ -133,17 +69,17 @@ export async function enviarMensaje(clinicId: string, userId: string, mensaje: s
       respuesta = await llamarOpenRouter(systemPrompt, userPrompt)
     } catch (err) {
       console.error('Consultora Senior: error llamando a OpenRouter:', err)
-      respuesta = respuestaFallback(kpis, mensaje)
+      respuesta = respuestaFallback(datos, snapshot)
     }
   } else {
-    respuesta = respuestaFallback(kpis, mensaje)
+    respuesta = respuestaFallback(datos, snapshot)
   }
 
   await prisma.consultoraMensaje.create({
     data: { clinicId, userId, rol: 'assistant', contenido: respuesta },
   })
 
-  return { respuesta, usandoIA, kpis }
+  return { respuesta, usandoIA }
 }
 
 async function llamarOpenRouter(systemPrompt: string, userPrompt: string): Promise<string> {
@@ -175,45 +111,21 @@ async function llamarOpenRouter(systemPrompt: string, userPrompt: string): Promi
   return texto
 }
 
-// Respuesta útil sin IA externa: analiza los KPIs ya calculados con reglas simples.
-function respuestaFallback(kpis: KpisClinica, _mensaje: string): string {
-  const partes: string[] = []
-  partes.push(`**Diagnóstico rápido de ${kpis.nombre}**\n`)
-
-  partes.push(`Equipo: ${kpis.equipoTotal} · Pacientes activos: ${kpis.pacientesActivos} · Citas hoy: ${kpis.citasHoy} · Citas esta semana: ${kpis.citasSemana}\n`)
-
-  const alertas: string[] = []
-  if (kpis.tasaNoShowPct !== null && kpis.tasaNoShowPct > 15) {
-    alertas.push(
-      `Tasa de no-show del ${kpis.tasaNoShowPct.toFixed(1)}% (últimos 30 días) — está por encima de lo razonable. Recomendación: confirmación automática 24h antes por WhatsApp + lista de espera para llenar huecos.`,
-    )
-  }
-  if (kpis.insumosBajoStock > 0) {
-    alertas.push(
-      `${kpis.insumosBajoStock} insumo(s) por debajo del stock mínimo. Revisa el módulo de Inventario antes de que afecte la agenda.`,
-    )
-  }
-  if (kpis.facturasPendientes > 5) {
-    alertas.push(
-      `${kpis.facturasPendientes} facturas pendientes de cobro. Hay una fuga en el ciclo de ingresos: prioriza el seguimiento de cobranza esta semana.`,
-    )
-  }
-
+// Respuesta útil sin IA externa: las mismas alertas (semáforo, referencia,
+// responsable, acción) que muestra la página de Indicadores.
+function respuestaFallback(datos: DatosClinica, s: KpiSnapshot): string {
+  const sc = s.scorecard
+  const partes: string[] = [
+    `**Diagnóstico rápido de ${datos.nombre}** (mes en curso)\n`,
+    `Equipo: ${datos.equipoTotal} · Consultas realizadas: ${sc.procesos.consultasRealizadas} · Pacientes nuevos: ${sc.paciente.nuevos} · Ingresos cobrados: ${sc.financiera.ingresos.toFixed(2)} ${s.moneda}\n`,
+  ]
+  const alertas = alertasKpi(s)
   if (alertas.length > 0) {
-    partes.push('**Alertas:**')
-    alertas.forEach((a) => partes.push(`- ${a}`))
-    partes.push('')
+    partes.push('**Alertas:**', ...alertas.map((a) => `- ${a}`), '')
   } else {
-    partes.push('No hay alertas críticas en los indicadores disponibles ahora mismo.\n')
+    partes.push('No hay indicadores esenciales en ámbar o rojo ahora mismo.\n')
   }
-
-  partes.push(
-    `Ingresos cobrados (30 días): ${kpis.ingresosMes30d.toFixed(2)} ${kpis.moneda}. Como referencia general, tus costes operativos no deberían superar el 65-70% de esa cifra.`,
-  )
-
-  partes.push(
-    `\nPara respuestas más profundas y personalizadas a tu pregunta, configura la variable OPENROUTER_API_KEY en el servidor de la API.`,
-  )
-
+  partes.push('Tienes el detalle completo en la página **Indicadores**.')
+  partes.push('\nPara respuestas más profundas y personalizadas a tu pregunta, configura la variable OPENROUTER_API_KEY en el servidor de la API.')
   return partes.join('\n')
 }

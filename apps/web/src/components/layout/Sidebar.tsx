@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Brain,
+  Gauge,
   Calendar,
   FileText,
   LayoutDashboard,
@@ -35,6 +36,7 @@ export function Sidebar() {
     { href: '/billing', label: 'Facturación', icon: Receipt },
     ...(hasModule(clinic, 'inventario') ? [{ href: '/inventory', label: 'Inventario', icon: Package }] : []),
     ...(hasModule(clinic, 'chat') ? [{ href: '/chat', label: 'WhatsApp', icon: MessageCircle }] : []),
+    ...(puedeVerConsultora ? [{ href: '/kpis', label: 'Indicadores', icon: Gauge }] : []),
     ...(puedeVerConsultora ? [{ href: '/consultora', label: 'Consultora Senior', icon: Brain }] : []),
   ]
 
