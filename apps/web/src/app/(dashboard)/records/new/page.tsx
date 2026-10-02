@@ -130,12 +130,12 @@ function NewRecordForm() {
   }
 
   const VITAL_FIELDS: { key: keyof VitalSigns; label: string; unit: string }[] = [
-    { key: 'heartRate', label: 'Frecuencia Cardíaca', unit: 'BPM' },
+    { key: 'heartRate', label: 'Frecuencia Cardíaca', unit: 'lpm' },
     { key: 'bloodPressureSys', label: 'Presión Arterial', unit: 'mmHg' },
     { key: 'temperature', label: 'Temperatura', unit: '°C' },
     { key: 'spo2', label: 'Saturación O2', unit: '%' },
     { key: 'weight', label: 'Peso', unit: 'kg' },
-    { key: 'height', label: 'Altura', unit: 'mt' },
+    { key: 'height', label: 'Altura', unit: 'm' },
   ]
 
   return (

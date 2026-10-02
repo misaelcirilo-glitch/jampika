@@ -37,7 +37,7 @@ export function Esenciales(props: {
         extra={
           cap.horasDisponibles > 0 || notaCapacidad ? (
             <div className="space-y-0.5 text-[11px] text-muted-foreground">
-              {cap.horasDisponibles > 0 && <p>Huecos sin reservar: {h(cap.horasHuecos)} · Cancelaciones y no-shows: {h(cap.horasCanceladasNoShow)}</p>}
+              {cap.horasDisponibles > 0 && <p>Huecos sin reservar: {h(cap.horasHuecos)} · Cancelaciones e inasistencias: {h(cap.horasCanceladasNoShow)}</p>}
               {notaCapacidad && <p className="italic">{notaCapacidad}</p>}
               {cap.horasDisponibles > 0 && cap.montoPerdido == null && onConfigurar && (
                 <button type="button" onClick={onConfigurar} className="font-semibold text-primary underline-offset-2 hover:underline">

@@ -1,3 +1,4 @@
+import { AppError } from '../../middleware/errorHandler.js'
 import { Router } from 'express'
 import { z } from 'zod'
 import Tesseract from 'tesseract.js'
@@ -75,7 +76,7 @@ router.put('/items/:id', async (req, res, next) => {
     const existing = await prisma.inventoryItem.findFirst({
       where: { id: req.params.id, clinicId: req.auth!.clinicId },
     })
-    if (!existing) return res.status(404).json({ error: 'Item no encontrado' })
+    if (!existing) return res.status(404).json({ error: 'Producto no encontrado' })
     const item = await prisma.inventoryItem.update({
       where: { id: req.params.id },
       data: {
@@ -104,7 +105,7 @@ router.post('/movements', async (req, res, next) => {
       const item = await tx.inventoryItem.findFirst({
         where: { id: body.itemId, clinicId: req.auth!.clinicId },
       })
-      if (!item) throw new Error('Item no encontrado')
+      if (!item) throw new AppError('Producto no encontrado', 404)
 
       const delta = body.movementType === 'in' ? body.quantity : -Math.abs(body.quantity)
       const newStock = Math.max(0, item.currentStock + delta)
@@ -139,7 +140,7 @@ router.post('/movements', async (req, res, next) => {
 router.post('/scan', async (req, res, next) => {
   try {
     const { image } = req.body as { image?: string }
-    if (!image) return res.status(400).json({ error: 'Se requiere campo image (base64)' })
+    if (!image) return res.status(400).json({ error: 'Se requiere la imagen de la factura' })
 
     // Soporta "data:image/...;base64,XXXX" o base64 crudo
     const base64Data = image.includes(',') ? image.split(',')[1]! : image

@@ -1,3 +1,4 @@
+import { AppError } from '../../middleware/errorHandler.js'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { randomUUID } from 'node:crypto'
@@ -49,10 +50,10 @@ export async function login(input: LoginInput) {
     where: { email: input.email, isActive: true },
     include: { clinic: true },
   })
-  if (!user) throw new Error('Credenciales inválidas')
+  if (!user) throw new AppError('Credenciales inválidas', 401)
 
   const ok = await bcrypt.compare(input.password, user.passwordHash)
-  if (!ok) throw new Error('Credenciales inválidas')
+  if (!ok) throw new AppError('Credenciales inválidas', 401)
 
   const payload: AuthPayload = {
     userId: user.id,
@@ -105,12 +106,12 @@ export async function refresh(refreshToken: string) {
     include: { user: true },
   })
   if (!stored || stored.revokedAt || stored.expiresAt < new Date()) {
-    throw new Error('Refresh token inválido')
+    throw new AppError('Sesión inválida', 401)
   }
   try {
     jwt.verify(refreshToken, env.JWT_REFRESH_SECRET)
   } catch {
-    throw new Error('Refresh token inválido')
+    throw new AppError('Sesión inválida', 401)
   }
   const payload: AuthPayload = {
     userId: stored.user.id,
@@ -123,7 +124,7 @@ export async function refresh(refreshToken: string) {
 
 export async function registerClinic(input: RegisterClinicInput) {
   const existing = await prisma.clinic.findUnique({ where: { slug: input.slug } })
-  if (existing) throw new Error('El identificador de clínica ya existe')
+  if (existing) throw new AppError('El identificador de clínica ya existe', 409)
 
   const passwordHash = await bcrypt.hash(input.adminPassword, 10)
   const ownerId = randomUUID()

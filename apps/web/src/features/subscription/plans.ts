@@ -51,7 +51,7 @@ export const PLAN_CARDS: PlanCard[] = [
 export const PLAN_FEATURES: string[] = [
   'Pacientes, agenda e historia clínica',
   'Facturación y comprobantes',
-  'App 100% offline: funciona sin internet y sincroniza sola',
+  'Funciona sin internet y se sincroniza sola',
   'Chat con pacientes por WhatsApp',
   'Recordatorios de cita automáticos',
   'Reserva online pública',

@@ -77,9 +77,9 @@ export default function PrivacidadPage() {
         </ul>
       </LegalSection>
 
-      <LegalSection n={4} title="Almacenamiento offline y en el dispositivo">
+      <LegalSection n={4} title="Almacenamiento sin conexión y en el dispositivo">
         <p>
-          Por su naturaleza offline-first, Jampika guarda una copia de los datos en el navegador o
+          Como funciona sin conexión, Jampika guarda una copia de los datos en el navegador o
           dispositivo (IndexedDB) para permitir trabajar sin conexión, y los sincroniza con nuestros
           servidores cuando hay red. Es responsabilidad del usuario proteger el acceso físico a sus
           dispositivos y cerrar sesión en equipos compartidos.

@@ -1,3 +1,4 @@
+import { mensajeHttp } from '@/lib/etiquetas'
 // Cliente HTTP que inyecta el token de acceso y maneja refresh automático.
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1'
@@ -86,7 +87,7 @@ export async function apiFetch<T = unknown>(
   const data = contentType.includes('application/json') ? await res.json() : null
 
   if (!res.ok) {
-    throw new ApiError(res.status, (data as any)?.error ?? res.statusText, data)
+    throw new ApiError(res.status, (data as any)?.error ?? mensajeHttp(res.status), data)
   }
   return data as T
 }
@@ -105,7 +106,7 @@ export async function apiDownload(path: string, filename: string): Promise<void>
   } catch {
     throw new ApiError(0, 'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.')
   }
-  if (!res.ok) throw new ApiError(res.status, res.statusText)
+  if (!res.ok) throw new ApiError(res.status, mensajeHttp(res.status))
   const blob = await res.blob()
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -142,7 +143,7 @@ export async function apiUpload<T = unknown>(path: string, form: FormData): Prom
   }
   const contentType = res.headers.get('content-type') ?? ''
   const data = contentType.includes('application/json') ? await res.json() : null
-  if (!res.ok) throw new ApiError(res.status, (data as any)?.error ?? res.statusText, data)
+  if (!res.ok) throw new ApiError(res.status, (data as any)?.error ?? mensajeHttp(res.status), data)
   return data as T
 }
 
@@ -165,7 +166,7 @@ export async function apiGetBlob(path: string): Promise<Blob> {
   } catch {
     throw new ApiError(0, 'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.')
   }
-  if (!res.ok) throw new ApiError(res.status, res.statusText)
+  if (!res.ok) throw new ApiError(res.status, mensajeHttp(res.status))
   return res.blob()
 }
 

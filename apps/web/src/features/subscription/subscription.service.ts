@@ -64,7 +64,9 @@ export function statusLabel(status: string): { text: string; tone: 'ok' | 'warn'
     case 'unpaid':
     case 'incomplete_expired':
       return { text: 'Cancelada', tone: 'bad' }
+    case 'incomplete':
+      return { text: 'Pago incompleto', tone: 'warn' }
     default:
-      return { text: status, tone: 'warn' }
+      return { text: 'Estado desconocido', tone: 'warn' }
   }
 }

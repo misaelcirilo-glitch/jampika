@@ -57,6 +57,7 @@ app.use(
     limit: 300,
     standardHeaders: true,
     legacyHeaders: false,
+    message: { error: 'Demasiadas solicitudes. Espera un momento e inténtalo de nuevo.' },
   }),
 )
 
@@ -87,6 +88,11 @@ app.use('/api/v1/stripe', subscriptionRoutes) // suscripción de plataforma (aut
 app.use('/api/v1/rda-co', rdaCoRoutes) // RDA Colombia: Bundle FHIR local (sin envío a Minsalud)
 app.use('/api/v1/consultora', consultoraRoutes) // Consultora Senior: consultoría de gestión clínica (auth admin/doctor)
 app.use('/api/v1/kpis', kpisRoutes) // Indicadores de gestión (auth admin/doctor; mismo cálculo que la consultora)
+
+// Rutas inexistentes: JSON en español (no el "Cannot GET" de Express).
+app.use((_req, res) => {
+  res.status(404).json({ error: 'Recurso no encontrado' })
+})
 
 app.use(errorHandler)
 

@@ -1,5 +1,6 @@
 'use client'
 
+import { etiqueta, METODO_PAGO, TIPO_DOCUMENTO } from '@/lib/etiquetas'
 import { use, useEffect, useState } from 'react'
 import { CheckCircle2, Printer } from 'lucide-react'
 import { api } from '@/lib/api'
@@ -67,6 +68,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                 <option value="transfer">Transferencia</option>
                 <option value="yape">Yape</option>
                 <option value="plin">Plin</option>
+                <option value="nequi">Nequi</option>
               </select>
             )}
             {isPaid && (
@@ -123,7 +125,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                 {invoice.patient?.firstName} {invoice.patient?.lastName}
               </p>
               <p className="text-xs text-muted-foreground">
-                {invoice.patient?.documentType} {invoice.patient?.documentNumber}
+                {etiqueta(TIPO_DOCUMENTO, invoice.patient?.documentType)} {invoice.patient?.documentType === 'sin-documento' ? '' : invoice.patient?.documentNumber}
               </p>
             </div>
             {invoice.customerTaxId && (
@@ -186,7 +188,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
           {isPaid && (
             <div className="mt-6 rounded-md border border-success/30 bg-success/10 p-3 text-sm text-success">
               <strong>Pagado</strong> el {formatDate(invoice.paidAt)} · Método:{' '}
-              {invoice.paymentMethod}
+              {etiqueta(METODO_PAGO, invoice.paymentMethod)}
             </div>
           )}
 

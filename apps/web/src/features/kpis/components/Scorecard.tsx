@@ -15,7 +15,7 @@ function Perspectiva({ titulo, children }: { titulo: string; children: React.Rea
   )
 }
 
-/** Nivel 2 — Balanced Scorecard: las 4 perspectivas que usa la consultora. */
+/** Nivel 2 — Cuadro de mando integral: las 4 perspectivas que usa la consultora. */
 export function Scorecard(props: { s: KpiSnapshot; dinero: (n: number) => string; terminoPacientes: string; conInventario: boolean }) {
   const { s, dinero, terminoPacientes, conInventario } = props
   const { financiera: f, paciente: pa, procesos: pr } = s.scorecard
@@ -34,7 +34,7 @@ export function Scorecard(props: { s: KpiSnapshot; dinero: (n: number) => string
         <TarjetaDato icono={Activity} etiqueta="Ocupación de agenda" valor={s.esenciales.capacidadPerdida.horasDisponibles > 0 ? p(pr.ocupacionPct) : '—'} subtitulo="Meta 70-85% (más de 85% = sobrecarga)" estado={pr.ocupacionEstado} />
         <TarjetaDato icono={CalendarCheck} etiqueta="Consultas realizadas" valor={String(pr.consultasRealizadas)} subtitulo={`De ${pr.citas} citas · antes ${pr.consultasAnterior}`} tendencia={<Tendencia actual={pr.consultasRealizadas} anterior={pr.consultasAnterior} />} />
         <TarjetaDato icono={Ban} etiqueta="Cancelaciones" valor={p(pr.cancelacionPct)} />
-        <TarjetaDato icono={AlertTriangle} etiqueta="Citas pasadas sin cerrar" valor={String(pr.citasSinCerrar)} subtitulo="Márcalas como atendida o no-show para que los datos sean fiables" estado={pr.citasSinCerrar > 0 ? 'atencion' : 'bien'} />
+        <TarjetaDato icono={AlertTriangle} etiqueta="Citas pasadas sin cerrar" valor={String(pr.citasSinCerrar)} subtitulo="Márcalas como atendida o como inasistencia para que los datos sean fiables" estado={pr.citasSinCerrar > 0 ? 'atencion' : 'bien'} />
       </Perspectiva>
       {r && (
         <Perspectiva titulo="Recursos">

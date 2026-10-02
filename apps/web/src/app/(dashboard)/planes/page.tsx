@@ -53,7 +53,7 @@ function PlanesContent() {
       await startCheckout(plan, period)
       // startCheckout redirige (window.location) en el caso feliz; no reseteamos pending.
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'No se pudo iniciar el checkout.')
+      setError(e instanceof Error ? e.message : 'No se pudo iniciar el pago.')
       setPending(null)
     }
   }

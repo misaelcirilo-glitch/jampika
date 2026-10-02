@@ -28,8 +28,8 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: MAX
 function uploadSingle(req: Request, res: Response, next: NextFunction) {
   upload.single('file')(req, res, (err: unknown) => {
     if (err) {
-      const msg = err instanceof Error ? err.message : 'Archivo inválido'
-      return res.status(400).json({ error: msg === 'File too large' ? 'El archivo supera los 4 MB' : msg })
+      const msg = err instanceof Error ? err.message : ''
+      return res.status(400).json({ error: msg === 'File too large' ? 'El archivo supera los 4 MB' : 'Archivo inválido' })
     }
     next()
   })
@@ -53,7 +53,7 @@ router.post('/:patientId/files', uploadSingle, async (req, res, next) => {
       return res.status(400).json({ error: 'Formato no permitido (imágenes o PDF)' })
     }
     const parsed = metaSchema.safeParse(req.body)
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0]?.message ?? "Datos inválidos" })
+    if (!parsed.success) return res.status(400).json({ error: 'Categoría de archivo inválida' })
 
     const ext = file.originalname.includes('.') ? file.originalname.split('.').pop() : undefined
     const key = `clinic/${clinicId}/patient/${patient.id}/${randomUUID()}${ext ? '.' + ext : ''}`

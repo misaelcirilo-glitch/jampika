@@ -84,7 +84,7 @@ export default function NewInvoicePage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!patientId || items.length === 0) {
-      setError('Selecciona un paciente y añade al menos un item')
+      setError('Selecciona un paciente y añade al menos un concepto')
       return
     }
     setSaving(true)
@@ -148,7 +148,7 @@ export default function NewInvoicePage() {
 
             <section>
               <div className="mb-2 flex items-center justify-between">
-                <h2 className="text-sm font-semibold uppercase text-muted-foreground">Items</h2>
+                <h2 className="text-sm font-semibold uppercase text-muted-foreground">Conceptos</h2>
                 <div className="flex gap-2">
                   <select
                     className="h-9 rounded-md border border-input bg-card px-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -254,6 +254,7 @@ export default function NewInvoicePage() {
                   <option value="transfer">Transferencia</option>
                   <option value="yape">Yape</option>
                   <option value="plin">Plin</option>
+                  <option value="nequi">Nequi</option>
                 </select>
               </div>
             </div>

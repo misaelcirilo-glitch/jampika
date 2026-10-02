@@ -51,7 +51,7 @@ export default function NewInventoryItemPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="mb-6 text-2xl font-semibold text-foreground">Nuevo item de inventario</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Nuevo producto de inventario</h1>
       <Card>
         <CardContent className="p-6">
           <form onSubmit={onSubmit} className="space-y-4">

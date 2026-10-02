@@ -1,7 +1,7 @@
 {
   "name": "Jampika",
   "short_name": "Jampika",
-  "description": "Gestión offline-first para clínicas médicas",
+  "description": "Gestión de clínicas médicas que funciona sin conexión",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f8fafc",

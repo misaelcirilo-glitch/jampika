@@ -65,6 +65,8 @@ const TYPE_BADGES: Record<string, { label: string; className: string }> = {
   follow_up: { label: 'CONTROL', className: 'border-transparent text-primary bg-secondary' },
   emergency: { label: 'URGENTE', className: 'border-transparent text-warning-foreground bg-warning/15' },
   procedure: { label: 'PROCEDIMIENTO', className: 'border-transparent text-muted-foreground bg-muted' },
+  telemedicine: { label: 'TELEMEDICINA', className: 'border-transparent text-primary bg-secondary' },
+  'reserva-online': { label: 'RESERVA ONLINE', className: 'border-transparent text-primary bg-secondary' },
 }
 
 export default function DashboardPage() {

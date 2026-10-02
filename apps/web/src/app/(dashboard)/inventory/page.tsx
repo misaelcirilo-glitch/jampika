@@ -1,5 +1,6 @@
 'use client'
 
+import { etiqueta, CATEGORIA_INVENTARIO } from '@/lib/etiquetas'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { AlertTriangle, Camera, ChevronLeft, ChevronRight, ClipboardCheck, Clock, Download, Filter, Plus, Search } from 'lucide-react'
@@ -87,7 +88,7 @@ export default function InventoryPage() {
         </div>
         <Button asChild variant="outline">
           <Link href="/inventory/scan">
-            <Camera className="h-4 w-4 text-primary" /> Scan Invoice
+            <Camera className="h-4 w-4 text-primary" /> Escanear factura
           </Link>
         </Button>
         <Button asChild>
@@ -129,7 +130,7 @@ export default function InventoryPage() {
                 <p className="text-xs text-muted-foreground">Total Productos</p>
               </div>
             </div>
-            <p className="mt-3 text-3xl font-black text-foreground">{items.length.toLocaleString()}</p>
+            <p className="mt-3 text-3xl font-black text-foreground">{items.length.toLocaleString('es-PE')}</p>
           </CardContent>
         </Card>
 
@@ -180,7 +181,7 @@ export default function InventoryPage() {
               {paginated.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={6} className="py-12 text-center text-sm text-muted-foreground">
-                    Sin items en inventario.
+                    Sin productos en inventario.
                   </TableCell>
                 </TableRow>
               )}
@@ -197,14 +198,14 @@ export default function InventoryPage() {
                     <TableCell>
                       {i.category && (
                         <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ${getCategoryColor(i.category)}`}>
-                          {i.category}
+                          {etiqueta(CATEGORIA_INVENTARIO, i.category)}
                         </span>
                       )}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <span className={`text-sm font-bold ${isLow ? 'text-destructive' : 'text-foreground'}`}>
-                          {i.currentStock} {i.unit ?? 'Units'}
+                          {i.currentStock} {i.unit ?? 'unidades'}
                         </span>
                         <div className="h-1.5 w-16 rounded-full bg-muted">
                           <div className={`h-full rounded-full ${bar.color}`} style={{ width: bar.width }} />
@@ -227,7 +228,7 @@ export default function InventoryPage() {
           {/* Pagination */}
           <div className="flex items-center justify-between border-t border-border px-5 py-3">
             <p className="text-xs text-muted-foreground">
-              Showing {Math.min((page - 1) * PAGE_SIZE + 1, filtered.length)}-{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} items
+              Mostrando {Math.min((page - 1) * PAGE_SIZE + 1, filtered.length)}-{Math.min(page * PAGE_SIZE, filtered.length)} de {filtered.length} productos
             </p>
             <div className="flex items-center gap-1">
               <Button variant="ghost" size="icon" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="h-8 w-8 text-muted-foreground">

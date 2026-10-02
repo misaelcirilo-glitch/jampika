@@ -25,6 +25,8 @@ const STATUS_BADGES: Record<string, { label: string; variant: BadgeProps['varian
   pending: { label: 'Pendiente', variant: 'warning' },
   overdue: { label: 'Vencido', variant: 'destructive' },
   cancelled: { label: 'Anulado', variant: 'outline' },
+  partial: { label: 'Pago parcial', variant: 'warning' },
+  refunded: { label: 'Reembolsado', variant: 'outline' },
 }
 
 export default function BillingPage() {

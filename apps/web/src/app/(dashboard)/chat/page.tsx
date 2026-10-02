@@ -1,5 +1,6 @@
 'use client'
 
+import { textoMensajeWhatsApp } from '@/lib/etiquetas'
 import { useEffect, useRef, useState } from 'react'
 import { MessageCircle, Send } from 'lucide-react'
 import { api, ApiError } from '@/lib/api'
@@ -121,7 +122,7 @@ export default function ChatPage() {
                       </span>
                     )}
                   </div>
-                  <p className="truncate text-xs text-muted-foreground">{c.lastMessagePreview ?? ''}</p>
+                  <p className="truncate text-xs text-muted-foreground">{textoMensajeWhatsApp(c.lastMessagePreview)}</p>
                 </button>
               ))}
             </div>
@@ -150,7 +151,7 @@ export default function ChatPage() {
                           : 'bg-muted text-foreground rounded-bl-sm'
                       }`}
                     >
-                      <p className="whitespace-pre-wrap">{m.body}</p>
+                      <p className="whitespace-pre-wrap">{textoMensajeWhatsApp(m.body)}</p>
                       <p className={`mt-0.5 text-[10px] ${m.direction === 'out' ? 'text-success-foreground/70' : 'text-muted-foreground'}`}>
                         {timeShort(m.createdAt)}
                         {m.status === 'simulated' ? ' · simulado' : ''}

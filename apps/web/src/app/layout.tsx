@@ -3,7 +3,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Jampika - Gestión de Clínicas',
-  description: 'SaaS offline-first para clínicas médicas en Latinoamérica',
+  description: 'Software de gestión para clínicas médicas en Latinoamérica que funciona sin conexión',
   manifest: '/manifest.json',
 }
 

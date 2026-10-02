@@ -19,7 +19,7 @@ export function JourneySeccion({ s }: { s: KpiSnapshot }) {
   ]
   const max = Math.max(...etapas.map((e) => e.valor), 1)
   return (
-    <SeccionDesplegable icono={Route} titulo="Embudo del Patient Journey" subtitulo="Dónde se pierde cada cita: de agendada a cobrada, y si el paciente vuelve">
+    <SeccionDesplegable icono={Route} titulo="Embudo del recorrido del paciente" subtitulo="Dónde se pierde cada cita: de agendada a cobrada, y si el paciente vuelve">
       <div className="space-y-2">
         {etapas.map((e, i) => (
           <BarraH key={e.etiqueta} etiqueta={e.etiqueta} valor={e.valor} max={max} color={e.color}

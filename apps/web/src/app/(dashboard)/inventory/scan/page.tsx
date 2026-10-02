@@ -153,7 +153,7 @@ export default function ScanInvoicePage() {
                     <p className="text-sm font-semibold text-muted-foreground">Procesando imagen…</p>
                   </>
                 ) : preview ? (
-                  <img src={preview} alt="Preview" className="max-h-48 rounded-lg" />
+                  <img src={preview} alt="Vista previa" className="max-h-48 rounded-lg" />
                 ) : (
                   <>
                     <Upload className="mb-3 h-10 w-10 text-muted-foreground" />
@@ -180,7 +180,7 @@ export default function ScanInvoicePage() {
           <Card>
             <CardContent className="p-5">
               <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
-                <Lightbulb className="h-4 w-4 text-warning-foreground" /> Tips de Escaneo
+                <Lightbulb className="h-4 w-4 text-warning-foreground" /> Consejos de escaneo
               </h3>
               <ul className="space-y-2 text-xs text-muted-foreground">
                 <li className="flex items-start gap-2">

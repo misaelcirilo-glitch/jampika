@@ -1,5 +1,6 @@
 'use client'
 
+import { etiqueta, GENERO, TIPO_REGISTRO } from '@/lib/etiquetas'
 import Link from 'next/link'
 import { use, useEffect, useState } from 'react'
 import {
@@ -59,7 +60,7 @@ export default function PatientDetailPage({ params }: { params: Promise<{ id: st
     : null
 
   const initials = `${patient.firstName[0]}${patient.lastName[0]}`.toUpperCase()
-  const genderLabel = patient.gender === 'M' ? 'Masculino' : patient.gender === 'F' ? 'Femenino' : patient.gender ?? ''
+  const genderLabel = etiqueta(GENERO, patient.gender)
 
   const tabs: { key: Tab; label: string; count?: number }[] = [
     { key: 'resumen', label: 'Resumen' },
@@ -191,11 +192,7 @@ export default function PatientDetailPage({ params }: { params: Promise<{ id: st
               <div className="space-y-4">
                 {records.map((r) => {
                   const isOpen = expanded === r.id
-                  const typeLabel = r.recordType === 'consultation' ? 'Consulta General'
-                    : r.recordType === 'follow_up' ? 'Control'
-                    : r.recordType === 'emergency' ? 'Emergencia'
-                    : r.recordType === 'procedure' ? 'Procedimiento'
-                    : r.recordType
+                  const typeLabel = etiqueta(TIPO_REGISTRO, r.recordType)
                   return (
                     <div key={r.id} className="relative pl-10">
                       {/* Timeline dot */}
@@ -209,9 +206,6 @@ export default function PatientDetailPage({ params }: { params: Promise<{ id: st
                           <div className="flex-1">
                             <div className="flex items-center gap-3">
                               <span className="text-sm font-bold text-foreground">{typeLabel}</span>
-                              <Badge variant="secondary" className="text-primary uppercase">
-                                {r.recordType}
-                              </Badge>
                             </div>
                             <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
                               <span className="flex items-center gap-1">

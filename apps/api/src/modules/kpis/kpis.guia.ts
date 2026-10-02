@@ -15,7 +15,7 @@ export const GUIA_KPIS: Record<'capacidad' | 'noShow' | 'sinCita' | 'cobro', Gui
     accion: 'Llenar huecos con lista de espera y reprogramar en el momento cada cancelación: nadie cuelga sin nueva fecha.',
   },
   noShow: {
-    nombre: 'No-show',
+    nombre: 'Inasistencias',
     referencia: '<5% verde, 5-10% ámbar, >10% rojo',
     responsable: 'Recepción',
     accion: 'Confirmación por WhatsApp 24h antes y lista de espera para cubrir las ausencias.',

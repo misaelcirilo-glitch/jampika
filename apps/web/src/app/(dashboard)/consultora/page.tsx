@@ -17,10 +17,10 @@ interface Mensaje {
 
 const SUGERENCIAS = [
   '¿Qué debería priorizar esta semana en la clínica?',
-  '¿Cómo está nuestra tasa de no-show y qué puedo hacer?',
+  '¿Cómo está nuestra tasa de inasistencias y qué puedo hacer?',
   '¿Cómo puedo mejorar la experiencia del paciente en recepción?',
   '¿Cómo debería fijar precios de nuestros servicios?',
-  '¿Qué KPIs debería revisar cada mes?',
+  '¿Qué indicadores debería revisar cada mes?',
 ]
 
 export default function ConsultoraPage() {

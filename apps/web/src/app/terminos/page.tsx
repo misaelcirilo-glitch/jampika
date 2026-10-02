@@ -15,7 +15,7 @@ export default function TerminosPage() {
     >
       <p>
         Estos Términos y Condiciones (los «Términos») regulan el acceso y uso de {LEGAL.producto},
-        una plataforma de software como servicio (SaaS) para la gestión de la práctica de
+        una plataforma de software como servicio en la nube para la gestión de la práctica de
         profesionales de salud y bienestar, titularidad de {LEGAL.entidad} («nosotros»), con sede en{' '}
         {LEGAL.pais}. Al crear una cuenta o contratar una suscripción aceptas estos Términos en su
         totalidad. Si no estás de acuerdo, no utilices el servicio.
@@ -38,7 +38,7 @@ export default function TerminosPage() {
         <p>
           Jampika ofrece herramientas de gestión de pacientes o consultantes, agenda, historia
           clínica, cuestionarios, facturación, inventario, telemedicina y sincronización de datos.
-          Está diseñado con arquitectura <strong>offline-first</strong>: la información puede
+          Está diseñado con arquitectura <strong>que funciona sin conexión</strong>: la información puede
           almacenarse localmente en el dispositivo y sincronizarse con nuestros servidores cuando hay
           conexión.
         </p>

@@ -1,5 +1,6 @@
 'use client'
 
+import { etiqueta, ROL } from '@/lib/etiquetas'
 import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { Sidebar } from '@/components/layout/Sidebar'
@@ -14,6 +15,8 @@ const PAGE_TITLES: Record<string, string> = {
   '/billing': 'Facturación',
   '/inventory': 'Inventario',
   '/chat': 'WhatsApp',
+  '/kpis': 'Indicadores',
+  '/consultora': 'Consultora Senior',
   '/planes': 'Planes',
   '/settings': 'Configuración',
 }
@@ -45,7 +48,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const pageTitle = getPageTitle(pathname)
   const initials = user ? `${user.firstName[0]}${user.lastName[0]}` : '??'
-  const roleName = user?.role === 'admin' ? 'Administrador' : user?.role === 'doctor' ? 'Médico General' : user?.role === 'receptionist' ? 'Recepcionista' : user?.role ?? ''
+  const roleName = etiqueta(ROL, user?.role)
 
   return (
     <div className="flex h-screen bg-background">

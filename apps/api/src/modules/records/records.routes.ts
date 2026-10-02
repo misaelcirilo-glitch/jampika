@@ -35,7 +35,7 @@ const recordSchema = z.object({
 router.get('/', async (req, res, next) => {
   try {
     const { patientId } = req.query as Record<string, string>
-    if (!patientId) return res.status(400).json({ error: 'patientId requerido' })
+    if (!patientId) return res.status(400).json({ error: 'Falta indicar el paciente' })
     const data = await prisma.medicalRecord.findMany({
       where: { clinicId: req.auth!.clinicId, patientId },
       orderBy: { recordDate: 'desc' },

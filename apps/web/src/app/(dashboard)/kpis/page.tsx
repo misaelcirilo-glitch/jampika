@@ -151,7 +151,7 @@ export default function KpisPage() {
           <section className="space-y-3">
             <div>
               <h2 className="text-base font-bold text-foreground">Cuadro de mando</h2>
-              <p className="text-xs text-muted-foreground">Las cuatro perspectivas del Balanced Scorecard, comparadas con el periodo anterior.</p>
+              <p className="text-xs text-muted-foreground">Las cuatro perspectivas del cuadro de mando integral, comparadas con el periodo anterior.</p>
             </div>
             <Scorecard s={s} dinero={dinero} terminoPacientes={prof.patients} conInventario={hasModule(clinic, 'inventario')} />
           </section>

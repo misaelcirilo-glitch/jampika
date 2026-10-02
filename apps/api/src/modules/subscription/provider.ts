@@ -3,6 +3,7 @@
 // firma → su propio handler, todos escriben en la misma tabla `subscriptions`).
 // Hoy: Stripe. Futuro: Rebill (métodos locales LATAM) se enchufa aquí.
 
+import { AppError } from '../../middleware/errorHandler.js'
 import { prisma } from '../../config/database.js'
 import { getStripe } from './client.js'
 import { planLookupKey, type BillingPeriod, type Plan } from './plans.js'
@@ -41,7 +42,7 @@ export class StripeProvider implements PaymentProvider {
       where: { id: clinicId },
       include: { subscription: true },
     })
-    if (!clinic) throw new Error('Clínica no encontrada')
+    if (!clinic) throw new AppError('Clínica no encontrada', 404)
 
     // Reutilizar el customer si la clínica ya tuvo suscripción.
     let customerId = clinic.subscription?.stripeCustomerId ?? null
@@ -55,6 +56,7 @@ export class StripeProvider implements PaymentProvider {
     }
 
     const session = await stripe.checkout.sessions.create({
+      locale: 'es',
       mode: 'subscription',
       customer: customerId,
       line_items: [{ price: price.id, quantity: 1 }],
@@ -69,15 +71,16 @@ export class StripeProvider implements PaymentProvider {
       success_url: `${origin}/settings?suscripcion=ok&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/planes?suscripcion=cancel`,
     })
-    if (!session.url) throw new Error('No se pudo crear la sesión de pago')
+    if (!session.url) throw new AppError('No se pudo crear la sesión de pago', 502)
     return { url: session.url }
   }
 
   async getPortalUrl({ clinicId, origin }: { clinicId: string; origin: string }): Promise<string> {
     const stripe = getStripe()
     const sub = await prisma.subscription.findUnique({ where: { clinicId } })
-    if (!sub?.stripeCustomerId) throw new Error('La clínica aún no tiene suscripción')
+    if (!sub?.stripeCustomerId) throw new AppError('La clínica aún no tiene suscripción', 400)
     const session = await stripe.billingPortal.sessions.create({
+      locale: 'es',
       customer: sub.stripeCustomerId,
       return_url: `${origin}/settings?suscripcion=portal`,
     })
@@ -87,7 +90,7 @@ export class StripeProvider implements PaymentProvider {
   async cancelSubscription(clinicId: string): Promise<void> {
     const stripe = getStripe()
     const sub = await prisma.subscription.findUnique({ where: { clinicId } })
-    if (!sub?.stripeSubscriptionId) throw new Error('La clínica no tiene suscripción activa')
+    if (!sub?.stripeSubscriptionId) throw new AppError('La clínica no tiene suscripción activa', 400)
     await stripe.subscriptions.update(sub.stripeSubscriptionId, { cancel_at_period_end: true })
   }
 }
