@@ -110,6 +110,15 @@ export default function LoginPage() {
             Modo demo: admin@jampika.dev / jampika123
           </p>
         )}
+
+        <nav className="mt-6 flex justify-center gap-4 text-xs text-muted-foreground">
+          <Link href="/terminos" className="hover:text-foreground">
+            Términos y condiciones
+          </Link>
+          <Link href="/privacidad" className="hover:text-foreground">
+            Política de privacidad
+          </Link>
+        </nav>
       </div>
     </div>
   )

@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense, useState } from 'react'
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Check, Loader2 } from 'lucide-react'
 import {
@@ -122,6 +123,20 @@ function PlanesContent() {
           />
         ))}
       </div>
+
+      {/* Nota legal previa al checkout */}
+      <p className="text-center text-xs text-muted-foreground">
+        La suscripción se renueva automáticamente; puedes cancelarla cuando quieras. Al suscribirte
+        aceptas los{' '}
+        <Link href="/terminos" className="font-medium text-primary hover:text-primary/80">
+          Términos y Condiciones
+        </Link>{' '}
+        y la{' '}
+        <Link href="/privacidad" className="font-medium text-primary hover:text-primary/80">
+          Política de Privacidad
+        </Link>
+        .
+      </p>
     </div>
   )
 }

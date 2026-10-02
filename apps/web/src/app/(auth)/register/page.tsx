@@ -228,6 +228,18 @@ export default function RegisterPage() {
             <Button type="submit" disabled={loading} className="w-full">
               {loading ? 'Creando clínica…' : 'Crear clínica'}
             </Button>
+
+            <p className="text-center text-xs text-muted-foreground">
+              Al crear tu clínica aceptas los{' '}
+              <Link href="/terminos" className="font-medium text-primary hover:text-primary/80">
+                Términos y Condiciones
+              </Link>{' '}
+              y la{' '}
+              <Link href="/privacidad" className="font-medium text-primary hover:text-primary/80">
+                Política de Privacidad
+              </Link>
+              .
+            </p>
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
