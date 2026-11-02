@@ -2,9 +2,9 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ChevronLeft, ChevronRight, Plus, Search, Users, UserPlus, RotateCcw } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Search, Trash2, Users, UserPlus, RotateCcw } from 'lucide-react'
 import type { Patient } from '@jampika/shared'
-import { listPatients } from '@/features/patients/patients.service'
+import { deletePatient, listPatients } from '@/features/patients/patients.service'
 import { formatDate } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -57,6 +57,13 @@ export default function PatientsPage() {
     void listPatients(search).then(setPatients)
     setPage(1)
   }, [search])
+
+  // Baja lógica: el paciente sale de la lista pero su historia clínica se conserva.
+  async function handleDelete(p: Patient) {
+    if (!window.confirm(`¿Eliminar a ${p.firstName} ${p.lastName} de la lista de pacientes? Su historia clínica se conserva.`)) return
+    await deletePatient(p.id)
+    setPatients((prev) => prev.filter((x) => x.id !== p.id))
+  }
 
   const filtered = statusFilter === 'all'
     ? patients
@@ -118,12 +125,13 @@ export default function PatientsPage() {
               <TableHead>Teléfono</TableHead>
               <TableHead>Última visita</TableHead>
               <TableHead>Estado</TableHead>
+              <TableHead className="w-12"><span className="sr-only">Acciones</span></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginated.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="py-12 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={6} className="py-12 text-center text-sm text-muted-foreground">
                   Sin pacientes registrados.
                 </TableCell>
               </TableRow>
@@ -160,6 +168,20 @@ export default function PatientsPage() {
                   </TableCell>
                   <TableCell>
                     <Badge variant={badge.variant}>{badge.label}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Eliminar a ${p.firstName} ${p.lastName}`}
+                      className="text-muted-foreground hover:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        void handleDelete(p)
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               )
