@@ -10,6 +10,7 @@ import {
   Clock,
   Mail,
   MapPin,
+  Pencil,
   Phone,
   Printer,
   Stethoscope,
@@ -132,6 +133,11 @@ export default function PatientDetailPage({ params }: { params: Promise<{ id: st
               </div>
             </div>
             <div className="flex gap-2">
+              <Button variant="outline" asChild>
+                <Link href={`/patients/${patient.id}/edit`}>
+                  <Pencil className="h-4 w-4" /> Editar datos
+                </Link>
+              </Button>
               <Button asChild>
                 <Link href={`/records/new?patientId=${patient.id}`}>
                   Nueva Consulta
